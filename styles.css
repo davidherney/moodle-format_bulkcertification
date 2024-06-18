@@ -1,3 +1,9 @@
-.format_bulkcertification_table > tbody tr:hover > td .fa, .format_bulkcertification_table > tbody tr:hover > td a.textmenu {
-    color: unset;
+/** Styles included in bulkcertification course format */
+
+.format-bulkcertification #page-content div.buttons {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    margin: 5px;
+    background-color: var(--light);
 }

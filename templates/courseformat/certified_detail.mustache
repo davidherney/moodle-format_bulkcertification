@@ -1,0 +1,90 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_bulkcertification/courseformat/certified_detail
+
+    Displays the complete course format.
+
+    Example context (json):
+    {
+    }
+}}
+
+<div id="course-format-{{uniqid}}">
+
+    {{> format_bulkcertification/tabs }}
+
+    <h2>{{{title}}}</h2>
+
+    {{#bulk}}
+    <table class="generaltable format_bulkcertification_table view_table">
+        <tbody>
+            <tr>
+                <th>{{#str}} bulktime, format_bulkcertification {{/str}}</th>
+                <td>{{bulktimeformated}}</td>
+            </tr>
+            <tr>
+                <th>{{#str}} issuing, format_bulkcertification {{/str}}</th>
+                <td>
+                    <a href="{{urlbase}}/user/view.php?id={{issuingid}}" target="_blank">
+                        {{issuingnames}}
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <th>{{#str}} objective_name, format_bulkcertification {{/str}}</th>
+                <td>{{coursename}}</td>
+            </tr>
+            <tr>
+                <th>{{#str}} objective_code, format_bulkcertification {{/str}}</th>
+                <td>{{code}}</td>
+            </tr>
+            <tr>
+                <th>{{#str}} groupcode, format_bulkcertification {{/str}}</th>
+                <td>{{groupcode}}</td>
+            </tr>
+            <tr>
+                <th>{{#str}} objective_date, format_bulkcertification {{/str}}</th>
+                <td>{{customtimeformated}}</td>
+            </tr>
+            <tr>
+                <th>{{#str}} remote_date, format_bulkcertification {{/str}}</th>
+                <td>{{remotetimeformated}}</td>
+            </tr>
+            <tr>
+                <th>{{#str}} objective_hours, format_bulkcertification {{/str}}</th>
+                <td>{{hoursformated}}</td>
+            </tr>
+            <tr>
+                <th>{{#str}} template, format_bulkcertification {{/str}}</th>
+                <td>
+                    {{#templateurl}}<a href="{{templateurl}}">{{/templateurl}}
+                        {{certificatename}}
+                    {{#templateurl}}</a>{{/templateurl}}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {{/bulk}}
+
+    <hr>
+
+    <div id="format_bulkcertification-datareport">
+        {{{certifiedcontent}}}
+    </div>
+
+</div>

@@ -22,8 +22,12 @@
  */
 namespace format_bulkcertification\event;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * The issue_deleted event class.
+ *
+ * @copyright  2024 David Herney - cirano
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class issue_deleted extends \core\event\base {
 
     /**

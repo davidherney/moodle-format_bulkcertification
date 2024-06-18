@@ -14,18 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace format_bulkcertification\output;
+
+use core_courseformat\output\section_renderer;
+use moodle_page;
+
 /**
- * Version details.
+ * Basic renderer for bulk certification format.
  *
- * @package    format_bulkcertification
  * @copyright  2024 David Herney - cirano
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class renderer extends section_renderer {
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version   = 2024051203.07;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2022111800;        // Requires this Moodle version.
-$plugin->component = 'format_bulkcertification';    // Full name of the plugin (used for diagnostics).
-$plugin->maturity = MATURITY_BETA;
-$plugin->dependencies = ['format_topics' => 2022112801, 'mod_simplecertificate' => 2024051101];
+}

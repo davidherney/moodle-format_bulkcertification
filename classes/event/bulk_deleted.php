@@ -17,13 +17,17 @@
 /**
  *
  * @package    format_bulkcertification
- * @copyright 2017 David Herney Bernal - cirano - david.bernal@bambuco.co
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2024 David Herney - cirano
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace format_bulkcertification\event;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * The bulk_deleted event class.
+ *
+ * @copyright  2024 David Herney - cirano
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class bulk_deleted extends \core\event\base {
 
     /**

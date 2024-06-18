@@ -15,55 +15,42 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains the default section controls output class.
  *
  * @package    format_bulkcertification
  * @copyright  2024 David Herney - cirano
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace format_bulkcertification\event;
+
+namespace format_bulkcertification\output\courseformat\content\section;
+
+use context_course;
+use core_courseformat\output\local\content\section\controlmenu as controlmenu_base;
 
 /**
- * The bulk_created event class.
+ * Base class to render a course section menu.
  *
+ * @package    format_bulkcertification
  * @copyright  2024 David Herney - cirano
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class bulk_created extends \core\event\base {
+class controlmenu extends controlmenu_base {
+
+    /** @var course_format the course format class */
+    protected $format;
+
+    /** @var section_info the course section class */
+    protected $section;
 
     /**
-     * Init method.
-     */
-    protected function init() {
-        $this->data['objecttable'] = 'bulkcertification_bulk';
-        $this->data['crud'] = 'c';
-        $this->data['edulevel'] = self::LEVEL_OTHER;
-    }
-
-    /**
-     * Returns localised general event name.
+     * Generate the edit control items of a section.
      *
-     * @return string
-     */
-    public static function get_name() {
-        return get_string('bulk_created', 'format_bulkcertification');
-    }
-
-    /**
-     * Returns description of what happened.
+     * This method must remain public until the final deprecation of section_edit_control_items.
      *
-     * @return string
+     * @return array of edit control items
      */
-    public function get_description() {
-        return "The user with id '$this->userid' created bulk certificates in course with id '$this->objectid'.";
-    }
+    public function section_control_items() {
 
-    /**
-     * Returns relevant URL.
-     *
-     * @return \moodle_url
-     */
-    public function get_url() {
-        return new \moodle_url('/course/view.php', array('id' => $this->objectid));
+        return [];
     }
-
 }

@@ -15,55 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Privacy Subsystem implementation for Bulk certification format.
  *
  * @package    format_bulkcertification
  * @copyright  2024 David Herney - cirano
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace format_bulkcertification\event;
+
+namespace format_bulkcertification\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+use core_privacy\local\metadata\null_provider;
 
 /**
- * The bulk_created event class.
+ * Privacy Subsystem for Bulk certification format implementing null_provider.
  *
  * @copyright  2024 David Herney - cirano
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class bulk_created extends \core\event\base {
+class provider implements null_provider {
 
     /**
-     * Init method.
-     */
-    protected function init() {
-        $this->data['objecttable'] = 'bulkcertification_bulk';
-        $this->data['crud'] = 'c';
-        $this->data['edulevel'] = self::LEVEL_OTHER;
-    }
-
-    /**
-     * Returns localised general event name.
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
      *
-     * @return string
+     * @return  string
      */
-    public static function get_name() {
-        return get_string('bulk_created', 'format_bulkcertification');
+    public static function get_reason(): string {
+        return 'privacy:metadata';
     }
-
-    /**
-     * Returns description of what happened.
-     *
-     * @return string
-     */
-    public function get_description() {
-        return "The user with id '$this->userid' created bulk certificates in course with id '$this->objectid'.";
-    }
-
-    /**
-     * Returns relevant URL.
-     *
-     * @return \moodle_url
-     */
-    public function get_url() {
-        return new \moodle_url('/course/view.php', array('id' => $this->objectid));
-    }
-
 }

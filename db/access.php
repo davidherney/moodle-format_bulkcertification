@@ -18,29 +18,28 @@
  * Capability definitions for this format.
  *
  * @package   format_bulkcertification
- * @copyright 2017 David Herney Bernal - cirano - david.bernal@bambuco.co
+ * @copyright 2017 David Herney Bernal - cirano.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$capabilities = array(
+$capabilities = [
 
-    'format/bulkcertification:deleteissues' => array(
+    'format/bulkcertification:deleteissues' => [
         'riskbitmask' => RISK_MANAGETRUST|RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
-        )
-    ),
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 
-    'format/bulkcertification:manage' => array(
+    'format/bulkcertification:manage' => [
         'riskbitmask' => RISK_MANAGETRUST,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
-        )
-    ),
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 
-);
-
+];

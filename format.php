@@ -15,42 +15,43 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tool to bulk certifications
+ * Bulk certification format. Display the whole course as "topics" made of modules.
  *
- * @package   format_bulkcertification
- * @copyright 2017 David Herney Bernal - cirano - david.bernal@bambuco.co
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    format_bulkcertification
+ * @copyright  2024 David Herney - cirano
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->libdir.'/completionlib.php');
 
-$current = optional_param('tab', '', PARAM_TEXT);
+// Horrible backwards compatible parameter aliasing.
+if ($topic = optional_param('topic', 0, PARAM_INT)) {
+    $url = $PAGE->url;
+    $url->param('section', $topic);
+    debugging('Outdated topic param passed to course/view.php', DEBUG_DEVELOPER);
+    redirect($url);
+}
+// End backwards-compatible aliasing.
 
-
+// Retrieve course format option fields and add them to the $course object.
+$format = course_get_format($course);
+$course = $format->get_course();
 $context = context_course::instance($course->id);
+
+$format->currentaction = optional_param('action', \format_bulkcertification::ACTION_TPL, PARAM_TEXT);
+$format->currentoperation = optional_param('op', null, PARAM_TEXT);
+
+// Make sure section 0 is created.
+course_create_sections_if_missing($course, 0);
 
 $renderer = $PAGE->get_renderer('format_bulkcertification');
 
-if (!empty($current)) {
-     $USER->display[$course->id] = $current;
-} else {
-    if (!empty($USER->display[$course->id])) {
-        if (in_array($USER->display[$course->id], array('bulk', 'templates', 'certified', 'reports', 'objectives'))) {
-            $current = $USER->display[$course->id];
-        } else {
-            $USER->display[$course->id] = 'bulk';
-            $current = 'bulk';
-        }
-    } else {
-        $USER->display[$course->id] = 'bulk';
-        $current = 'bulk';
-    }
-}
-
-$renderer->print_single_section_page($course, null, $mods, $modnames, $modnamesused, $current);
+$outputclass = $format->get_output_classname('content');
+$widget = new $outputclass($format);
+echo $renderer->render($widget);
 
 // Include course format js module.
 $PAGE->requires->js('/course/format/topics/format.js');
-//$PAGE->requires->js('/course/format/bulkcertification/format.js');

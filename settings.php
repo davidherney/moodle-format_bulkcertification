@@ -17,14 +17,25 @@
 /**
  * Settings for format_bulkcertification
  *
- * @package   format_bulkcertification
- * @copyright 2017 David Herney Bernal - cirano - david.bernal@bambuco.co
+ * @package    format_bulkcertification
+ * @copyright  2024 David Herney - cirano
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
+
+
+    $settings->add(new admin_setting_configtext('format_bulkcertification/defaultemail',
+            new lang_string('defaultemail', 'format_bulkcertification'),
+            new lang_string('defaultemail_help', 'format_bulkcertification'),
+            '', PARAM_RAW));
+
+    $settings->add(new admin_setting_heading('format_bulkcertification/externalinfo',
+            new lang_string('externalinfotitle', 'format_bulkcertification'),
+            ''));
+
     $settings->add(new admin_setting_configtext('format_bulkcertification/wsuri',
             new lang_string('wsuri', 'format_bulkcertification'),
             null, '', PARAM_RAW));
