@@ -32,16 +32,6 @@ require_once($CFG->dirroot . '/mod/simplecertificate/locallib.php');
 class bulksimplecertificate extends \simplecertificate {
 
     /**
-     * @var \stdClass the admin config for all simplecertificate instances
-     */
-    private $adminconfig;
-
-    /**
-     * @var \assign_renderer the custom renderer for this module
-     */
-    private $output;
-
-    /**
      * Remove an issue certificate
      *
      * @param stdClass $issue Issue certificate object
@@ -241,7 +231,7 @@ class bulksimplecertificate extends \simplecertificate {
     /**
      * Substitutes the certificate text variables
      *
-     * @param stdClass $issuecert The issue certificate object
+     * @param \stdClass $issuecert The issue certificate object
      * @param string $certtext The certificate text without substitutions
      * @return string Return certificate text with all substutions
      */

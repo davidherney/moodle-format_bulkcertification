@@ -34,6 +34,7 @@ $string['badcolumnslength'] = 'The length of columns is incorrect, {$a} fields a
 $string['badcolumnsrequired'] = 'The field {$a->field} is required (row {$a->row})';
 $string['bademail'] = 'El correo electrónico ({$a->email}) del usuario {$a->fullname} es inválido, no se le ha enviado el correo de notificación.';
 $string['badfieldslength'] = 'Length of fields is incorrect to row: {$a}';
+$string['badusername'] = 'El nombre de usuario ({$a}) es inválido.';
 $string['badusernames'] = 'The firstname and lastname are required for new users ({$a})';
 $string['build'] = 'Generar';
 $string['bulk'] = 'Emisión masiva';
@@ -46,11 +47,9 @@ $string['bulkerroradding'] = '{$a}: Ocurrió un error desconocido y no se pudo a
 $string['bulkhoursmaxerror'] = '{$a}: No se soportan números de horas de más de cuatro cifras.';
 $string['bulkhoursnotnumber'] = '{$a}: El número de horas debe ser numérico.';
 $string['bulklist'] = 'Listado de emisiones';
-$string['bulklist_count'] = 'Listado de emisiones ({$a->count}/{$a->total})';
 $string['bulkobjectiveadd'] = 'Add news';
 $string['bulkobjectivemode'] = 'Importation mode';
 $string['bulkobjectivereplace'] = 'Replace current objectives';
-$string['bulks_notfound'] = 'No se encontraron emisiones para el curso indicado';
 $string['bulktime'] = 'Fecha de emisión';
 $string['certificate_detail'] = 'Detalles de la emisión';
 $string['certificate_error'] = 'No se ha podido generar el certificado para el usuario: {$a->username} - {$a->fullname}.';
@@ -80,6 +79,7 @@ Puede usar una plantilla para la dirección de correo, incluyendo las siguientes
 Las variables: {firstname} y {lastname} se limpiarán y tendrán formato para ser válidas como correo. Ejemplo: <em>usuario-{index}@midominio.com</em><br>
 También puede usar la palabra clave <em>creator</em> para asignar el correo del usuario que está realizando la importación.<br>
 <b>Si se deja vacío y un usuario no tiene la información del correo, no se creará su cuenta.</b>';
+$string['defaultemailerror'] = 'El correo electrónico por defecto no es válido y el usuario {$a} requiere un correo para ser creado.';
 $string['deletesection'] = 'Delete topic';
 $string['delimiter'] = 'Delimiter';
 $string['download_bulk'] = 'Descargar en zip';
@@ -161,6 +161,7 @@ $string['section0name'] = 'General';
 $string['sectionname'] = 'Topic';
 $string['sendmail'] = 'Enviar correo de notificación a los usuarios
 (tanto para la notificación de los certificados como con la clave a los usuarios nuevos).';
+$string['showcertified'] = 'Show certified';
 $string['showfromothers'] = 'Show topic';
 $string['site_statistics'] = 'Estadísticas del sitio';
 $string['statistic_label'] = 'Estadística';
@@ -172,6 +173,7 @@ $string['type_local'] = 'Local';
 $string['type_remote'] = 'Remote';
 $string['users'] = 'Listado de usuarios';
 $string['users_notfound'] = 'No se encontraron usuarios en el grupo con el código especificado';
+$string['usercreated'] = 'El usuario {$a->username} ha sido creado con el correo {$a->email} (ID: {$a->id}).';
 $string['userslist'] = 'Users list';
 $string['userslist_help'] = 'Required columns are: username. For new users: firstname, lastname, email. Además, se pueden agregar
 columnas con nombres de campos de usuario personalizados, empezando por la palabra <em>profile_</em>';
@@ -179,3 +181,4 @@ $string['wspassword'] = 'WS password';
 $string['wsuri'] = 'WS Uri';
 $string['wsuriemptyerror'] = 'The WS Uri is required for external sources.';
 $string['wsuser'] = 'WS User';
+$string['certifiedfilenamelabel'] = 'Certificado';

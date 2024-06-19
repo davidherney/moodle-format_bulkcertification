@@ -181,25 +181,95 @@ class controller {
      */
     public static function get_group($objective) : ?object {
 
-        if ($objective->type == 'local') {
+        $group = new \stdClass();
+        $group->name = $objective->name;
+        $group->code = $objective->code;
+        $group->groupcode = $objective->code;
+        $group->hours = $objective->hours;
+        $group->enddate = 0;
+        $group->users = [];
 
-            $group = new \stdClass();
-            $group->objective = $objective;
-            $group->objective->enddate = 0;
+        if ($objective->type == 'remote') {
 
-            $group->users = [];
-
-        } else {
             $config = get_config('format_bulkcertification');
             if (empty($config->wsuri)) {
                 throw new \moodle_exception('wsuriemptyerror', 'format_bulkcertification');
             }
 
-            // ToDo: get external group from external system.
-            $group = new \stdClass();
-            $group->objective = $objective;
-            $group->objective->enddate = 0;
-            $group->users = [];
+            $curloptions = [];
+            if (!empty($config->wsuser) && !empty($config->wspassword)) {
+                $curloptions['CURLOPT_USERPWD'] = $config->wsuser . ":" . $config->wspassword;
+            }
+
+            $curl = new \curl();
+            $curlresponse = $curl->get($config->wsuri, ['code' => $objective->code], $curloptions);
+
+            if (!$curlresponse) {
+                throw new \moodle_exception('users_notfound', 'format_bulkcertification');
+            }
+
+            $response = json_decode($curlresponse);
+
+            if (!is_object($response)) {
+                debugging('<pre>' . (string)$curlresponse . '</pre>');
+                throw new \moodle_exception('response_error', 'format_bulkcertification');
+            }
+
+            if (!property_exists($response, 'users') || !is_array($response->users) || count($response->users) == 0) {
+                throw new \moodle_exception('users_notfound', 'format_bulkcertification');
+            }
+
+            if (property_exists($response, 'name')) {
+                $group->name = trim($response->name);
+            }
+
+            if (property_exists($response, 'groupcode')) {
+                $group->groupcode = trim($response->groupcode);
+            }
+
+            if (property_exists($response, 'hours')) {
+                $group->hours = (int)$response->hours;
+            }
+
+            if (property_exists($response, 'enddate')) {
+                $enddate = trim($response->enddate);
+
+                if (is_numeric($enddate)) {
+                    $group->enddate = $enddate;
+                } else {
+                    $group->enddate = strtotime($enddate);
+                }
+            }
+
+            // Load the users information.
+            foreach ($response->users as $one) {
+
+                $user = new \stdClass();
+
+                // Check if the required fields are present.
+                foreach (self::$requiredfields as $field) {
+                    if (!property_exists($one, $field) || empty(trim($one->$field))) {
+                        continue 2;
+                    }
+
+                    $user->$field = trim($one->$field);
+                }
+
+                // Load the optional fields data.
+                foreach (self::$otherfields as $field) {
+                    if (property_exists($one, $field)) {
+
+                        if ($field == 'email') {
+                            $user->email = clean_param(trim($one->email), PARAM_EMAIL);
+                        } else {
+                            $user->$field = trim($one->$field);
+                        }
+
+                    }
+                }
+
+                $group->users[] = $user;
+            }
         }
 
         return $group;
@@ -350,19 +420,23 @@ class controller {
 
             foreach ($columns as $field) {
 
+                // Required fields.
+                if (in_array($field, $requiredfields) && (!property_exists($one, $field) || empty($one->$field))) {
+                    $a = (object)['field' => $field, 'row' => $k];
+                    $logs['errors'][] = get_string('badcolumnsrequired', 'format_bulkcertification', $a);
+                    $baddata = true;
+                    break;
+                }
+
+                if (!property_exists($one, $field)) {
+                    continue;
+                }
+
                 if ($field == 'email') {
                     $user->email = (!property_exists($one, 'email') || empty($one->email)) ? null :
                                                                                             clean_param($one->email, PARAM_EMAIL);
                 } else {
                     $user->$field = $one->$field;
-
-                    // Required fields.
-                    if (in_array($field, $requiredfields) && (!property_exists($one, $field) || empty($user->$field))) {
-                        $a = (object)['field' => $field, 'row' => $k];
-                        $logs['errors'][] = get_string('badcolumnsrequired', 'format_bulkcertification', $a);
-                        $baddata = true;
-                        break;
-                    }
                 }
             }
 
@@ -426,56 +500,91 @@ class controller {
         $maxid = $DB->get_field_sql('SELECT MAX(id) FROM {user}');
 
         foreach ($externalusers as $externaluser) {
-            $user = $DB->get_record('user', ['username'=> $externaluser->username]);
+            $username = clean_param($externaluser->username, PARAM_USERNAME);
+
+            if (empty($username)) {
+                $logs['errors'][] = get_string('badusername', 'format_bulkcertification', $externaluser->username);
+                continue;
+            }
+
+            $user = $DB->get_record('user', ['username'=> $username]);
 
             if (!$user) {
                 $newuser = new \stdClass();
-                $newuser->username = $externaluser->username;
+                $newuser->username = $username;
 
                 // For new users, the firstname and lastname are always required.
                 if (empty($externaluser->firstname) || empty($externaluser->lastname)) {
-                    $logs['errors'][] = get_string('badusernames', 'format_bulkcertification', $externaluser->username);
+                    $logs['errors'][] = get_string('badusernames', 'format_bulkcertification', $username);
                     continue;
                 }
 
                 foreach (self::$requiredfields as $field) {
                     if (empty($externaluser->$field)) {
-                        $a = (object)['field' => $field, 'username' => $externaluser->username];
+                        $a = (object)['field' => $field, 'username' => $username];
                         $logs['errors'][] = get_string('requireduserfield', 'format_bulkcertification', $a);
                         continue 2;
                     }
                 }
 
+                $newuser->email = '';
+                if (property_exists($externaluser, 'email')) {
+                    $externaluser->email = trim($externaluser->email);
+                    if (empty($externaluser->email)) {
+                        $newuser->email = $externaluser->email;
+                    }
+                }
+
                 // If the email is empty, use the email according to the configuration.
-                if (property_exists($externaluser, 'email') && !empty($externaluser->email)) {
-                    $newuser->email = $externaluser->email;
-                } else if ($defaultemail == 'creator') {
-                    $newuser->email = $USER->email;
-                } else if (!empty($defaultemail)) {
-                    $index = $maxid + 1;
-                    $defaultemail = str_replace('{index}', $index, $defaultemail);
-                    $defaultemail = str_replace('{username}', $externaluser->username, $defaultemail);
-                    $defaultemail = str_replace('{firstname}', $externaluser->firstname, $defaultemail);
-                    $defaultemail = str_replace('{lastname}', $externaluser->lastname, $defaultemail);
-                    $newuser->email = $defaultemail;
-                } else {
-                    $a = (object)['field' => 'email', 'username' => $externaluser->username];
-                    $logs['errors'][] = get_string('requireduserfield', 'format_bulkcertification', $a);
-                    continue;
+                if (empty($newuser->email)) {
+                    if ($defaultemail == 'creator') {
+                        // The "creator" is a special value that is replaced by the current user email.
+                        $newuser->email = $USER->email;
+                    } else if (!empty($defaultemail)) {
+                        $index = $maxid + 1;
+                        $tmpdefaultemail = str_replace('{index}', $index, $defaultemail);
+                        $tmpdefaultemail = str_replace('{username}', $username, $tmpdefaultemail);
+                        $tmpdefaultemail = str_replace('{firstname}', $externaluser->firstname, $tmpdefaultemail);
+                        $tmpdefaultemail = str_replace('{lastname}', $externaluser->lastname, $tmpdefaultemail);
+                        $newuser->email = $tmpdefaultemail;
+
+                    } else {
+                        $a = (object)['field' => 'email', 'username' => $username];
+                        $logs['errors'][] = get_string('requireduserfield', 'format_bulkcertification', $a);
+                        continue;
+                    }
                 }
 
                 $newuser->email = strtolower($newuser->email);
+                $newuser->email = filter_var($newuser->email, FILTER_SANITIZE_EMAIL);
                 $newuser->email = clean_param($newuser->email, PARAM_EMAIL);
+
+                // If the email is empty the default template has errors.
+                if (empty($newuser->email)) {
+                    $logs['errors'][] = get_string('defaultemailerror', 'format_bulkcertification', $username);
+                    continue;
+                }
 
                 // Optional fields.
                 foreach (self::$otherfields as $field) {
+
+                    // Not overwrite the pre-existing fields.
+                    if (property_exists($newuser, $field)) {
+                        continue;
+                    }
+
                     if (property_exists($externaluser, $field)) {
                         $newuser->$field = $externaluser->$field;
                     }
                 }
 
                 $user = self::create_user($newuser, $sendmail);
-                $maxid = $user->id;
+
+                if ($user) {
+                    $a = (object)['username' => $newuser->username, 'email' => $newuser->email, 'id' => $user->id];
+                    $logs['logs'][] = get_string('usercreated', 'format_bulkcertification', $a);
+                    $maxid = $user->id;
+                }
             } else {
                 if ($user->deleted) {
                     $DB->set_field('user', 'deleted', 0, ['id' => $user->id]);
@@ -488,9 +597,13 @@ class controller {
 
                 $fields = array_merge(self::$requiredfields, self::$otherfields);
                 foreach ($fields as $field) {
-                    if (property_exists($externaluser, $field) && $user->$field != $externaluser->$field) {
-                        $u->$field = $externaluser->$field;
-                        $anychange = true;
+
+                    // Only update if the local field is empty.
+                    if (empty($user->$field)) {
+                        if (property_exists($externaluser, $field) && $user->$field != $externaluser->$field) {
+                            $u->$field = $externaluser->$field;
+                            $anychange = true;
+                        }
                     }
                 }
 
@@ -533,7 +646,9 @@ class controller {
     private static function create_user($newuser, $sendmail = false) {
         global $CFG, $DB;
 
-        if (!$newuser || empty($newuser->username)) {
+        // Check required moodle fields to new users.
+        if (!$newuser || empty($newuser->username) || empty($newuser->email)
+                || empty($newuser->firstname) || empty($newuser->lastname)) {
             return null;
         }
 
@@ -570,7 +685,7 @@ class controller {
      * @param \stdClass $simpleissue
      * @return bool
      */
-    private function delete_one_certificate($course, $issue, $simpleissue): bool {
+    private static function delete_one_certificate($course, $issue, $simpleissue): bool {
         global $DB, $PAGE;
 
         $simplecertificate = new \format_bulkcertification\bulksimplecertificate(null, null, $course);
@@ -589,6 +704,50 @@ class controller {
         }
 
         return false;
+
+    }
+
+    /**
+     * Delete a group of certificates.
+     *
+     * @param int $delete The id of the bulk to delete.
+     * @param \stdClass $course
+     * @return bool
+     */
+    private static function delete_certificates_group($delete, $course) {
+        global $DB, $PAGE;
+
+        $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $delete], '*', MUST_EXIST);
+
+        $event = \format_bulkcertification\event\bulk_deleted::create([
+            'objectid' => $bulk->id,
+            'context' => $PAGE->context,
+        ]);
+        $event->add_record_snapshot('bulkcertification_bulk', $bulk);
+        $event->trigger();
+
+        $issues = $DB->get_records('bulkcertification_issues', ['bulkid' => $delete]);
+
+        $alldeleted = true;
+        if($issues) {
+            foreach($issues as $issue) {
+                $simpleissue = $DB->get_record('simplecertificate_issues', ['id' => $issue->issueid]);
+
+                if ($simpleissue) {
+                    $res = self::delete_one_certificate($course, $issue, $simpleissue);
+                    if (!$res) {
+                        $alldeleted = false;
+                    }
+                }
+            }
+        }
+
+        if ($alldeleted) {
+            // If not error deleting the issues, delete the bulk.
+            return $DB->delete_records('bulkcertification_bulk', ['id' => $bulk->id]);
+        } else {
+            return false;
+        }
 
     }
 
@@ -635,7 +794,8 @@ class controller {
         return email_to_user($user, $contact, $subject, $messagetext, $messagehtml);
 
     }
-/**
+
+    /**
      * Action "certified" implementation.
      *
      * @param \stdClass $data
@@ -648,6 +808,38 @@ class controller {
         global $DB, $OUTPUT;
 
         $data->activecertified = true;
+        $data->title = get_string('bulklist', 'format_bulkcertification');
+
+        $delete       = optional_param('delete', 0, PARAM_INT);
+        $confirm      = optional_param('confirm', '', PARAM_ALPHANUM); //md5 confirmation hash
+
+        $userformatdatetime = get_string('strftimedatetimeshort');
+        $candelete = has_capability('format/bulkcertification:deleteissues', $coursecontext);
+
+        // Delete a group of certificates, after confirmation
+        if ($candelete && $delete && confirm_sesskey()) {
+            $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $delete], '*', MUST_EXIST);
+
+            if ($confirm != md5($delete)) {
+                $returnurl = new \moodle_url('/course/view.php', [
+                                                                    'id' => $course->id,
+                                                                    'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                                                                ]);
+                $data->title = get_string('allcertificates_delete', 'format_bulkcertification');
+                $optionsyes = ['delete' => $delete, 'confirm' => md5($delete), 'sesskey' => sesskey()];
+                $bulktime = userdate($bulk->bulktime, $userformatdatetime);
+                $infodeletetext = "'{$bulk->certificatename} - {$bulk->code} - {$bulktime}'";
+                $data->formcontent = $OUTPUT->confirm(
+                                        get_string('deletecheck', '', $infodeletetext),
+                                            new \moodle_url($returnurl, $optionsyes),
+                                        $returnurl);
+                return;
+            }
+            else if ($data = data_submitted()) {
+                // Confirmed, delete the bulk.
+                \format_bulkcertification\controller::delete_certificates_group($delete, $course);
+            }
+        }
 
         // The objectives are listed by default.
         $report = system_report_factory::create(\format_bulkcertification\systemreports\certified::class,
@@ -755,6 +947,7 @@ class controller {
         $delete = optional_param('delete', 0, PARAM_INT);
         $confirm = optional_param('confirm', '', PARAM_ALPHANUM); // Md5 confirmation hash.
         $data->activeobjectives = true;
+        $data->title = get_string('objectives', 'format_bulkcertification');
 
         // Delete a objective, after confirmation.
         if ($delete && confirm_sesskey()) {
@@ -780,6 +973,7 @@ class controller {
             }
         } else if ($operation) {
             if ($operation == \format_bulkcertification::OP_ADD) {
+                $data->title = get_string('newobjective', 'format_bulkcertification');
 
                 $localdata = (object)[
                     'id' => $course->id,
@@ -803,6 +997,7 @@ class controller {
                 }
 
             } else if ($operation == \format_bulkcertification::OP_IMPORT) {
+                $data->title = get_string('importobjectives', 'format_bulkcertification');
 
                 $localdata = (object)[
                     'id' => $course->id,
@@ -859,8 +1054,9 @@ class controller {
         // The cancel button is pressed, so the form is displayed again.
         $cancel = optional_param('cancel', '', PARAM_TEXT);
 
+        $form = new \format_bulkcertification\forms\bulk(null, ['data' => $localdata]);
+
         if ($cancel || !$operation || $operation == \format_bulkcertification::OP_SEARCH) {
-            $form = new \format_bulkcertification\forms\bulk(null, ['data' => $localdata]);
 
             if (!$cancel && $postbulk = $form->get_data()) {
                 $objective = $DB->get_record('bulkcertification_objectives', ['id' => $postbulk->code]);
@@ -905,27 +1101,25 @@ class controller {
                 $buildform = new \format_bulkcertification\forms\remotebuild(null, ['data' => $localdata]);
             }
 
-            try {
-                $group = \format_bulkcertification\controller::get_group($objective);
-            } catch (\moodle_exception $e) {
-                $data->pageerrors[] = $e->getMessage();
-                $data->formcontent = $buildform->render();
-                return;
-            }
-
             $postbuild = $buildform->get_data();
 
             // Validate if the template exist.
             if (!$certificate = $DB->get_record('simplecertificate', ['id' => $postbuild->template])) {
                 $data->pageerrors[] = get_string('template_notfound', 'format_bulkcertification');
-                $data->formcontent = $buildform->render();
+
+                // Return to the initial form.
+                $data->formcontent = $form->render();
                 return;
             }
 
             // Users are read from the objective source.
             if ($objective->type == 'local') {
+                // Group for local is only a prototype.
+                $group = \format_bulkcertification\controller::get_group($objective);
                 $log = \format_bulkcertification\controller::read_local_users($postbuild);
             } else {
+                $groupdata = $postbuild->remotedata;
+                $group = json_decode(base64_decode($groupdata));
                 $log = \format_bulkcertification\controller::read_remote_users($group->users);
             }
 
@@ -933,9 +1127,9 @@ class controller {
             $group->users = $log['users'];
 
             if (count($log['errors']) > 0) {
-                // If errors are present, the form is displayed again.
+                // If errors are present, the initial form is displayed again.
                 $data->pageerrors = array_merge($data->pageerrors, $log['errors']);
-                $data->formcontent = $buildform->render();
+                $data->formcontent = $form->render();
                 return;
             }
 
@@ -949,18 +1143,19 @@ class controller {
             $realusers = $logrealusers['users'];
 
             if (count($logrealusers['errors']) > 0) {
-                // If errors are present, the form is displayed again.
+                // If errors are present, the initial form is displayed again.
                 $data->pageerrors = array_merge($data->pageerrors, $logrealusers['errors']);
-                $data->formcontent = $buildform->render();
+                $data->formcontent = $form->render();
                 return;
             }
 
             // Load the certificate object.
             $cm = get_coursemodule_from_instance('simplecertificate', $certificate->id, $course->id);
             $context = \context_module::instance ($cm->id);
-            $certificate->coursehours = $objective->hours;
+            $certificate->coursehours = $group->hours;
             $certificate->certdate = $objectivedate;
             $certificate->customparams = $customparams;
+            $course->fullname = $postbuild->coursename;
             $simplecertificate = new \format_bulkcertification\bulksimplecertificate($context, $cm, $course);
             $simplecertificate->set_instance($certificate);
 
@@ -974,14 +1169,14 @@ class controller {
             $bulkissue->issuingid       = $USER->id;
             $bulkissue->certificateid   = $certificate->id;
             $bulkissue->certificatename = $certificate->name;
-            $bulkissue->code            = $objective->code;
-            $bulkissue->groupcode       = $group->objective->code;
+            $bulkissue->code            = $group->code;
+            $bulkissue->groupcode       = $group->groupcode;
             $bulkissue->bulktime        = time();
             $bulkissue->customtime      = $certificate->certdate;
-            $bulkissue->remotetime      = $group->objective->enddate;
+            $bulkissue->remotetime      = $group->enddate;
             $bulkissue->localhours      = $objective->hours;
-            $bulkissue->remotehours     = $group->objective->hours;
-            $bulkissue->coursename      = $objective->name;
+            $bulkissue->remotehours     = $group->hours;
+            $bulkissue->coursename      = $group->name;
             $bulkissue->courseid        = $course->id;
             $bulkissue->customparams    = $customparams ? json_encode($customparams) : '[]';
 
@@ -1035,7 +1230,7 @@ class controller {
                                                                                 'bulkid' => $bulkissue->id,
                                                                             ]);
             $data->formcontent = $OUTPUT->container_start('buttons');
-            $data->formcontent .= $OUTPUT->single_button($urlreturn, get_string('moreinfo'));
+            $data->formcontent .= $OUTPUT->single_button($urlreturn, get_string('showcertified', 'format_bulkcertification'));
             $data->formcontent .= $OUTPUT->container_end();
 
         }

@@ -139,7 +139,24 @@ class issue extends base {
                 "ON {$bulkalias}.id = {$issuealias}.bulkid")
             ->add_join("INNER JOIN {simplecertificate_issues} {$simplecertificatealias} " .
                 "ON {$simplecertificatealias}.id = {$issuealias}.issueid")
-            ->add_fields("$simplecertificatealias.id, $simplecertificatealias.timecreated, $bulkalias.courseid")
+            ->add_fields("$simplecertificatealias.timecreated")
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->set_is_sortable(false)
+            ->set_callback(static function(?int $timecreated): string {
+                return userdate($timecreated, get_string('strftimedatemonthtimeshort', 'langconfig'));
+            });
+
+        $columns[] = (new column(
+            'certifiedfilename',
+            new lang_string('certifiedfilenamelabel', 'format_bulkcertification'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->add_join("INNER JOIN {bulkcertification_bulk} {$bulkalias} " .
+                "ON {$bulkalias}.id = {$issuealias}.bulkid")
+            ->add_join("INNER JOIN {simplecertificate_issues} {$simplecertificatealias} " .
+                "ON {$simplecertificatealias}.id = {$issuealias}.issueid")
+            ->add_fields("$simplecertificatealias.id, $bulkalias.courseid")
             ->set_type(column::TYPE_INTEGER)
             ->set_is_sortable(false)
             ->set_callback(static function(?int $issueid, ?object $data): string {
@@ -147,8 +164,7 @@ class issue extends base {
                 $simpleissue = $DB->get_record('simplecertificate_issues', ['id' => $issueid], '*', MUST_EXIST);
                 $course = $DB->get_record('course', ['id' => $data->courseid], '*', MUST_EXIST);
                 $simplecertificate = new \format_bulkcertification\bulksimplecertificate(null, null, $course);
-                return userdate($data->timecreated, get_string('strftimedatefullshort', 'langconfig')) .
-                        $simplecertificate->print_issue_certificate_file($simpleissue, true);
+                return $simplecertificate->print_issue_certificate_file($simpleissue);
             });
 
         $showuseridentity = explode(',', $CFG->showuseridentity);

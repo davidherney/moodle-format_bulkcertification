@@ -46,7 +46,7 @@ class localbuild extends moodleform {
     /**
      * @var array List of delimiters.
      */
-    public const DELIMITERS = ['t' => '\t', ',' => ',', ';' => ';'];
+    public const DELIMITERS = ['t' => "\t", ',' => ',', ';' => ';'];
 
     /**
      * Form definition.
@@ -63,9 +63,9 @@ class localbuild extends moodleform {
         //General options
         $mform->addElement('header', 'courseoptions', get_string('courseoptions', 'format_bulkcertification'));
 
-        if (!empty($this->_data->objective)) {
-            $hours = $this->_data->objective->hours;
-            $coursename = $this->_data->objective->name;
+        if (property_exists($this->_data, 'group')) {
+            $hours = $this->_data->group->hours;
+            $coursename = $this->_data->group->name;
             $templatename = $this->_data->templatename;
         } else {
             $hours = 0;
@@ -90,7 +90,9 @@ class localbuild extends moodleform {
         $mform->addRule('userslist', null, 'required', null, 'client');
         $mform->addHelpButton('userslist', 'userslist', 'format_bulkcertification');
 
-        $mform->addElement('select', 'delimiter', get_string('delimiter', 'format_bulkcertification'), self::DELIMITERS);
+        $delimiters = self::DELIMITERS;
+        $delimiters['t'] = '\t'; // Change the key to show the delimiter in the select box.
+        $mform->addElement('select', 'delimiter', get_string('delimiter', 'format_bulkcertification'), $delimiters);
 
         $mform->addElement('textarea', 'customparams', get_string('customparams', 'format_bulkcertification'), $areaprops);
         $mform->setType('customparams', PARAM_TEXT);

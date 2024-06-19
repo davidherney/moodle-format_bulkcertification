@@ -77,9 +77,9 @@ class issues extends system_report {
             "$entitymainalias.bulkid = :$param",
         ];
 
-        if (has_capability('format/bulkcertification:manage', $this->get_context())) {
-            $this->tomanagment = true;
-        }
+        $this->tomanagment = has_capability('format/bulkcertification:manage', $this->get_context());
+
+        $candelete = has_capability('format/bulkcertification:deleteissues', $this->get_context());
 
         $wheresql = implode(' AND ', $where);
 
@@ -107,7 +107,9 @@ class issues extends system_report {
                 false,
                 new \lang_string('rebuild', 'format_bulkcertification')
             )));
+        }
 
+        if ($candelete) {
             $this->add_action((new action(
                 new \moodle_url('/course/view.php', [
                                         'id' => $bulkid,
@@ -149,6 +151,7 @@ class issues extends system_report {
         $columns = [
             'issue:userfullname',
             'issue:receiveddate',
+            'issue:certifiedfilename',
         ];
 
         $showuseridentity = explode(',', $CFG->showuseridentity);

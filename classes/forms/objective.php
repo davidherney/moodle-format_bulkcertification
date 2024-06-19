@@ -53,10 +53,6 @@ class objective extends moodleform {
         // This contains the data of this form.
         $this->_data  = $this->_customdata['data'];
 
-        // General options.
-        $mform->addElement('header', 'general', get_string('newobjective', 'format_bulkcertification'));
-        $mform->setExpanded('general', false);
-
         $mform->addElement('text', 'objectivename', get_string('objective_name', 'format_bulkcertification'));
         $mform->setType('objectivename', PARAM_TEXT);
         $mform->addRule('objectivename', null, 'required', null, 'client');

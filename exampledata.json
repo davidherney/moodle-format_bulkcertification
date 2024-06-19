@@ -1,0 +1,29 @@
+{
+   "users":    [
+      {
+         "firstname": "Pepito",
+         "lastname": "Palotes",
+         "email": "pepito@noexiste.no",
+         "username": 123456789,
+         "country": "CO"
+      },
+      {
+         "firstname": "Fulanita",
+         "lastname": "de Tal",
+         "email": "fulanito@noexiste.no",
+         "username": 987654321,
+         "country": "AR"
+      },
+      {
+         "firstname": "Menganite",
+         "lastname": "Tal Cual",
+         "email": "",
+         "username": "menganite123",
+         "country": "CL"
+      }
+   ],
+   "name": "Course data to test bulk certification",
+   "groupcode": "bbcotest",
+   "hours": 30,
+   "enddate": "2020-11-11T00:00:00"
+}

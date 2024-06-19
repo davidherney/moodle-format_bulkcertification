@@ -46,7 +46,7 @@ class objectivesimport extends moodleform {
     /**
      * @var array List of delimiters.
      */
-    public const DELIMITERS = ['t' => '\t', ',' => ',', ';' => ';'];
+    public const DELIMITERS = ['t' => "\t", ',' => ',', ';' => ';'];
 
     /**
      * Form definition.
@@ -58,17 +58,15 @@ class objectivesimport extends moodleform {
         // This contains the data of this form.
         $this->_data = $this->_customdata['data'];
 
-        //General options
-        $mform->addElement('header', 'general', get_string('importobjectives', 'format_bulkcertification'));
-        $mform->setExpanded('general', false);
-
         $attrs = ['cols' => 80, 'rows' => 20];
         $mform->addElement('textarea', 'objectiveslist', get_string('objectiveslist', 'format_bulkcertification'), $attrs);
         $mform->setType('objectiveslist', PARAM_TEXT);
         $mform->addHelpButton('objectiveslist', 'objectiveslist', 'format_bulkcertification');
         $mform->addRule('objectiveslist', null, 'required', null, 'client');
 
-        $mform->addElement('select', 'delimiter', get_string('delimiter', 'format_bulkcertification'), self::DELIMITERS);
+        $delimiters = self::DELIMITERS;
+        $delimiters['t'] = '\t'; // Change the key to show the delimiter in the select box.
+        $mform->addElement('select', 'delimiter', get_string('delimiter', 'format_bulkcertification'), $delimiters);
 
         $values = [];
         $values[\format_bulkcertification::IMPORT_ADD] = get_string('bulkobjectiveadd', 'format_bulkcertification');
