@@ -205,7 +205,7 @@ class controller {
             $curlresponse = $curl->get($config->wsuri, ['code' => $objective->code], $curloptions);
 
             if (!$curlresponse) {
-                throw new \moodle_exception('users_notfound', 'format_bulkcertification');
+                throw new \moodle_exception('external_notfound', 'format_bulkcertification');
             }
 
             $response = json_decode($curlresponse);
@@ -829,19 +829,19 @@ class controller {
                 $optionsyes = ['delete' => $delete, 'confirm' => md5($delete), 'sesskey' => sesskey()];
                 $bulktime = userdate($bulk->bulktime, $userformatdatetime);
                 $infodeletetext = "'{$bulk->certificatename} - {$bulk->code} - {$bulktime}'";
-                $data->formcontent = $OUTPUT->confirm(
+                $data->certifiedcontent = $OUTPUT->confirm(
                                         get_string('deletecheck', '', $infodeletetext),
                                             new \moodle_url($returnurl, $optionsyes),
                                         $returnurl);
                 return;
             }
-            else if ($data = data_submitted()) {
+            else if (data_submitted()) {
                 // Confirmed, delete the bulk.
                 \format_bulkcertification\controller::delete_certificates_group($delete, $course);
             }
         }
 
-        // The objectives are listed by default.
+        // List the bulk certified.
         $report = system_report_factory::create(\format_bulkcertification\systemreports\certified::class,
                                                     $coursecontext, '', '', 0, ['courseid' => $course->id]);
 
@@ -880,6 +880,7 @@ class controller {
             $fullname = fullname($user);
 
             if ($confirm != md5($delete)) {
+                $data->title = get_string('onecertificates_delete', 'format_bulkcertification');
                 $returnurl = new \moodle_url('/course/view.php', [
                                                                     'id' => $course->id,
                                                                     'action' => \format_bulkcertification::ACTION_CERTIFIED,
@@ -887,11 +888,12 @@ class controller {
                                                                     'bulkid' => $bulkid,
                                                                 ]);
                 $optionsyes = ['delete' => $delete, 'confirm' => md5($delete), 'sesskey' => sesskey()];
-                $data->formcontent = $OUTPUT->confirm(
+                $data->certifiedcontent = $OUTPUT->confirm(
                                         get_string('deletecheck', '',
                                                     get_string('certificate_owner', 'format_bulkcertification', $fullname)),
                                         new \moodle_url($returnurl, $optionsyes),
                                         $returnurl);
+                return;
             }
             else if (data_submitted()) {
                 // Confirmed, delete the issue.
@@ -902,7 +904,7 @@ class controller {
         $userformatdate = get_string('strftimedaydate');
         $userformatdatetime = get_string('strftimedaydatetime');
 
-        $issuing = $DB->get_record('user', array('id' => $bulk->issuingid));
+        $issuing = $DB->get_record('user', ['id' => $bulk->issuingid]);
         $issuingnames = fullname($issuing);
 
         $a = new \stdClass();
@@ -912,7 +914,6 @@ class controller {
 
         $cm = get_coursemodule_from_instance( 'simplecertificate', $bulk->certificateid);
         if (!$cm) {
-            $data->pageerrors[] = get_string('module_notfound', 'format_bulkcertification');
             $templateurl = '';
         } else {
             $templateurl = new \moodle_url('/mod/simplecertificate/view.php?id=' . $cm->id);
@@ -927,7 +928,7 @@ class controller {
         $data->bulk->templateurl = $templateurl;
 
         $report = system_report_factory::create(\format_bulkcertification\systemreports\issues::class,
-                        $coursecontext, '', '', 0, ['bulkid' => $bulk->id]);
+                        $coursecontext, '', '', 0, ['bulkid' => $bulk->id, 'courseid' => $course->id]);
 
         $data->certifiedcontent = $report->output();
     }
@@ -952,6 +953,7 @@ class controller {
         // Delete a objective, after confirmation.
         if ($delete && confirm_sesskey()) {
             $objective = $DB->get_record('bulkcertification_objectives', ['id' => $delete], '*', MUST_EXIST);
+            $data->title = get_string('objective_delete', 'format_bulkcertification');
 
             if ($confirm != md5($delete)) {
                 $returnurl = new \moodle_url('/course/view.php', [
@@ -1155,15 +1157,9 @@ class controller {
             $certificate->coursehours = $group->hours;
             $certificate->certdate = $objectivedate;
             $certificate->customparams = $customparams;
-            $course->fullname = $postbuild->coursename;
+            $course->fullname = $group->name;
             $simplecertificate = new \format_bulkcertification\bulksimplecertificate($context, $cm, $course);
             $simplecertificate->set_instance($certificate);
-
-            $event = \format_bulkcertification\event\bulk_created::create([
-                'objectid' => $course->id,
-                'context' => $coursecontext,
-            ]);
-            $event->trigger();
 
             $bulkissue = new \stdClass();
             $bulkissue->issuingid       = $USER->id;
@@ -1181,6 +1177,15 @@ class controller {
             $bulkissue->customparams    = $customparams ? json_encode($customparams) : '[]';
 
             $bulkissue->id = $DB->insert_record('bulkcertification_bulk', $bulkissue, true);
+
+            $event = \format_bulkcertification\event\bulk_created::create([
+                'objectid' => $course->id,
+                'context' => $coursecontext,
+                'other' => [
+                    'bulkid' => $bulkissue->id,
+                ],
+            ]);
+            $event->trigger();
 
             foreach($group->users as $externaluser) {
                 $user = $realusers[$externaluser->username];
@@ -1237,4 +1242,96 @@ class controller {
 
     }
 
+    /**
+     * Rebuild one or all bulk certificates.
+     *
+     * The params bulkorissueid and clone are used in client mode.
+     *
+     * @param \stdClass $data
+     * @param bool $all Rebuild a bulk release
+     * @param int $bulkorissueid Bulk or issue id. If $all = true then $bulkorissueid is the bulk id
+     * @param bool $clone Create the issues as a new release
+     * @return void
+     */
+    public static function certified_rebuild($data, $course, $all = false, $bulkorissueid = null, $clone = false) {
+        global $DB;
+
+        $data->activecertified = true;
+        $data->title = get_string('rebuild', 'format_bulkcertification');
+
+        $issues = [];
+
+        if (!$all) {
+            if (!$bulkorissueid) {
+                $issueid = required_param('issueid', PARAM_INT);
+            } else {
+                $issueid = $bulkorissueid;
+            }
+            $issues[] = $DB->get_record('bulkcertification_issues', ['id' => $issueid], '*', MUST_EXIST);
+            $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $issues[0]->bulkid], '*', MUST_EXIST);
+        } else {
+            if (!$bulkorissueid) {
+                $bulkid = required_param('bulkid', PARAM_INT);
+            } else {
+                $bulkid = $bulkorissueid;
+            }
+            $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $bulkid], '*', MUST_EXIST);
+            $issues = $DB->get_records('bulkcertification_issues', ['bulkid' => $bulkid]);
+        }
+
+        if (!$cm = get_coursemodule_from_instance('simplecertificate', $bulk->certificateid)) {
+            $data->pageerrors[] = get_string('module_notfound', 'format_bulkcertification');
+            return;
+        }
+
+        if (!$certificate = $DB->get_record('simplecertificate', ['id' => $cm->instance])) {
+            $data->pageerrors[] = get_string('template_notfound', 'format_bulkcertification');
+            return;
+        }
+
+        if (!$course || !is_object($course)) {
+            $course = $DB->get_record('course', ['id' => $certificate->course], '*', MUST_EXIST);
+        }
+
+        $context = \context_module::instance($cm->id);
+
+        foreach ($issues as $issue) {
+            if($issue) {
+
+                $simpleissue = $DB->get_record('simplecertificate_issues', ['id' => $issue->issueid]);
+
+                // Load the certificate object.
+                $certificate->coursehours = $bulk->localhours;
+                $certificate->certdate = $bulk->customtime;
+                $certificate->customparams = $bulk->customparams;
+                $course->fullname = $bulk->coursename;
+                $simplecertificate = new \format_bulkcertification\bulksimplecertificate($context, $cm, $course);
+                $simplecertificate->set_instance($certificate);
+
+                $simpleissue->haschange = 1;
+                $simpleissue->timedeleted = time();
+
+                if ($clone) {
+                    unset($simpleissue->id);
+                    $simpleissue->certificateid = 0;
+                    $simpleissue = $simplecertificate->get_issue($simpleissue->userid, true);
+
+                    // Change the issue by the new one in the bulk reference.
+                    $updatedata = new \stdClass();
+                    $updatedata->id = $issue->id;
+                    $updatedata->issueid = $simpleissue->id;
+                    $DB->update_record('bulkcertification_issues', $updatedata);
+                }
+
+                if ($file = $simplecertificate->save_pdf_forced($simpleissue, true)){
+                    $data->pagemessages[] = get_string('certificate_ok', 'format_bulkcertification', $file->get_filename());
+                } else {
+                    $data->pageerrors[] = get_string('rebuild_error', 'format_bulkcertification', $simpleissue->id);
+                }
+
+            } else {
+                $data->pageerrors[] = get_string('issue_notfound', 'format_bulkcertification');
+            }
+        }
+    }
 }

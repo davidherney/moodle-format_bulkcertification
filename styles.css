@@ -7,3 +7,7 @@
     margin: 5px;
     background-color: var(--light);
 }
+
+.format_bulkcertification_table em.note-info {
+    font-size: 80%;
+}

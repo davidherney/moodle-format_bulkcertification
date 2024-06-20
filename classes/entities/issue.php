@@ -143,7 +143,7 @@ class issue extends base {
             ->set_type(column::TYPE_TIMESTAMP)
             ->set_is_sortable(false)
             ->set_callback(static function(?int $timecreated): string {
-                return userdate($timecreated, get_string('strftimedatemonthtimeshort', 'langconfig'));
+                return userdate($timecreated, get_string('strftimedatetimeshortaccurate', 'langconfig'));
             });
 
         $columns[] = (new column(

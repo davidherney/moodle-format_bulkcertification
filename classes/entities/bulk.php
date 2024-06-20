@@ -144,7 +144,7 @@ class bulk extends base {
             ->set_is_sortable(true)
             ->set_type(column::TYPE_TIMESTAMP)
             ->set_callback(static function(?int $bulktime): string {
-                return userdate($bulktime, get_string('strftimedatemonthtimeshort', 'langconfig'));
+                return userdate($bulktime, get_string('strftimedatetimeshortaccurate', 'langconfig'));
             });
 
         $columns[] = (new column(

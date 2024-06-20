@@ -63,6 +63,7 @@ class issues extends system_report {
         $this->set_main_table('bulkcertification_issues', $entitymainalias);
         $this->add_entity($entitymain);
 
+        $courseid = $this->get_parameter('courseid', 0, 'int');
         $bulkid = $this->get_parameter('bulkid', 0, 'int');
 
         if (empty($bulkid)) {
@@ -95,7 +96,8 @@ class issues extends system_report {
 
             $this->add_action((new action(
                 new \moodle_url('/course/view.php', [
-                                        'id' => $bulkid,
+                                        'id' => $courseid,
+                                        'bulkid' => $bulkid,
                                         'issueid' => ':id',
                                         'action' => \format_bulkcertification::ACTION_CERTIFIED,
                                         'op' => \format_bulkcertification::OP_REBUILD,
@@ -112,7 +114,8 @@ class issues extends system_report {
         if ($candelete) {
             $this->add_action((new action(
                 new \moodle_url('/course/view.php', [
-                                        'id' => $bulkid,
+                                        'id' => $courseid,
+                                        'bulkid' => $bulkid,
                                         'delete' => ':id',
                                         'action' => \format_bulkcertification::ACTION_CERTIFIED,
                                         'op' => \format_bulkcertification::OP_DETAILS,

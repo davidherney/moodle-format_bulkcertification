@@ -59,7 +59,8 @@ class content extends content_base {
             case \format_bulkcertification::ACTION_OBJECTIVES:
                 return 'format_bulkcertification/courseformat/objectives';
             case \format_bulkcertification::ACTION_CERTIFIED:
-                if ($this->format->currentoperation == \format_bulkcertification::OP_DETAILS) {
+                if ($this->format->currentoperation == \format_bulkcertification::OP_DETAILS
+                        || $this->format->currentoperation == \format_bulkcertification::OP_REBUILD) {
                     return 'format_bulkcertification/courseformat/certified_detail';
                 } else {
                     return 'format_bulkcertification/courseformat/certified';
@@ -111,13 +112,13 @@ class content extends content_base {
 
             switch($operation) {
                 case \format_bulkcertification::OP_REBUILD:
-                    \format_bulkcertification\controller::action_certified_rebuild($data, $coursecontext, $course, $operation);
+                    \format_bulkcertification\controller::certified_rebuild($data, $course);
                     // After the rebuild, list the issue certificates.
                 case \format_bulkcertification::OP_DETAILS:
                     \format_bulkcertification\controller::action_certified_detail($data, $coursecontext, $course, $operation);
                     break;
                 case \format_bulkcertification::OP_REBUILDALL:
-                    \format_bulkcertification\controller::action_certified_rebuild($data, $coursecontext, $course, $operation, true);
+                    \format_bulkcertification\controller::certified_rebuild($data, $course, true);
                     // Continue to default.
                 default:
                     \format_bulkcertification\controller::action_certified($data, $coursecontext, $course, $operation);

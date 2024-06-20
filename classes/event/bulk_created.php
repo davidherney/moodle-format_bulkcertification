@@ -63,7 +63,12 @@ class bulk_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/course/view.php', array('id' => $this->objectid));
+        return new \moodle_url('/course/view.php', [
+                                                        'id' => $this->objectid,
+                                                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                                                        'op' => \format_bulkcertification::OP_DETAILS,
+                                                        'bulkid' => $this->other['bulkid'],
+                                                    ]);
     }
 
 }

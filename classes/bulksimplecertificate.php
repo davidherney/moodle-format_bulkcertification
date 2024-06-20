@@ -34,7 +34,7 @@ class bulksimplecertificate extends \simplecertificate {
     /**
      * Remove an issue certificate
      *
-     * @param stdClass $issue Issue certificate object
+     * @param \stdClass $issue Issue certificate object
      * @return bool true if removed
      */
     public function delete_issue(\stdClass $issue) {
@@ -179,7 +179,90 @@ class bulksimplecertificate extends \simplecertificate {
             $issuecert->haschange = 1;
         }
 
-        return parent::save_pdf($issuecert);
+        return self::save_pdf($issuecert);
+    }
+
+    /**
+     * Save a certificate pdf file
+     *
+     * @param \stdClass $issuecert the certificate issue record
+     * @return mixed return stored_file if successful, false otherwise
+     */
+    private function save_pdf(\stdClass $issuecert) {
+        global $DB;
+
+        // Check if file exist.
+        // If issue certificate has no change, it's must has a file.
+        if (empty($issuecert->haschange)) {
+            if ($this->issue_file_exists($issuecert)) {
+                return $this->get_issue_file($issuecert);
+            } else {
+                throw new \moodle_exception(get_string('filenotfound', 'simplecertificate'));
+            }
+        } else {
+            // Cache issued cert, to avoid db queries.
+            $this->set_issuecert($issuecert);
+            $pdf = $this->create_pdf($this->get_issue($issuecert->userid));
+            if (!$pdf) {
+                throw new \moodle_exception("Error: can't create certificate file to " . $issuecert->userid);
+            }
+
+            // This avoid function calls loops.
+            $issuecert->haschange = 0;
+
+            // Remove old file, if exists.
+            if ($this->issue_file_exists($issuecert)) {
+                $file = $this->get_issue_file($issuecert);
+                $file->delete();
+            }
+
+            // Prepare file record object.
+            // Changed from original: Use the user context so as not to link it with the template.
+            $context = \context_user::instance($issuecert->userid);
+
+            $filename = $this->get_filecert_name($issuecert);
+            // Changed from original: The component, filearea and context are changed so that it is not tied to the activity.
+            $fileinfo = ['contextid' => $context->id,
+                        'component' => 'user',
+                        'filearea' => 'private',
+                        'itemid' => $issuecert->id,
+                        'filepath' => '/certificates/' . $issuecert->coursename . '/',
+                        'mimetype' => 'application/pdf',
+                        'userid' => $issuecert->userid,
+                        'filename' => $filename,
+            ];
+
+            $fs = get_file_storage();
+            $file = $fs->create_file_from_string($fileinfo, $pdf->Output('', 'S'));
+            if (!$file) {
+                throw new \moodle_exception('cannotsavefile', 'error', '', $fileinfo['filename']);
+            }
+
+            // Changed from original: Not remove user profile image.
+            $issuecert->pathnamehash = $file->get_pathnamehash();
+
+            // Changed from original: Not verify if user is a manager, it's no need.
+            if (!$DB->update_record('simplecertificate_issues', $issuecert)) {
+                throw new \moodle_exception('cannotupdatemod', 'error', null, 'simplecertificate_issue');
+            }
+             return $file;
+        }
+    }
+
+    /**
+     * Return a stores_file object with issued certificate PDF file or false otherwise
+     *
+     * @param \stdClass $issuecert Issued certificate object
+     * @return mixed <stored_file, boolean>
+     */
+    public function get_issue_file(\stdClass $issuecert) {
+        if (!empty($issuecert->haschange)) {
+            return $this->save_pdf($issuecert);
+        }
+
+        // Changed from original: Changed to instantiate the local save_pdf, the rest can be as in the parent.
+
+        return parent::get_issue_file($issuecert);
     }
 
     /**
@@ -277,7 +360,7 @@ class bulksimplecertificate extends \simplecertificate {
         }
 
         if (!empty($user->country)) {
-            $a->country = get_string($user->country, 'countries');
+            $a->country = get_string($user->country, 'countries'); // Mdlcode-disable-line cannot-parse-string.
         } else {
             $a->country = '';
         }
@@ -288,6 +371,7 @@ class bulksimplecertificate extends \simplecertificate {
             $key = 'profile_' . $key;
             $a->$key = strip_tags($value);
         }
+
         // The course name never change form a certificate to another, useless
         // text mark and atribbute, can be removed.
         $a->coursename = strip_tags($this->get_instance()->coursename);
