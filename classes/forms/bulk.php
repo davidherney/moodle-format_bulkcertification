@@ -65,7 +65,7 @@ class bulk extends moodleform {
         $mform->addHelpButton('template', 'template', 'format_bulkcertification');
 
         $codes = $DB->get_records_menu('bulkcertification_objectives', ['courseid' => $this->_data->id], '', 'id, name');
-        $mform->addElement('select', 'code', get_string('objective_code', 'format_bulkcertification'), $codes);
+        $mform->addElement('select', 'code', get_string('objective', 'format_bulkcertification'), $codes);
 
         $mform->addElement('hidden', 'id', $this->_data->id);
         $mform->setType('id', PARAM_INT);

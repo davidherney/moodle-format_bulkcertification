@@ -163,7 +163,9 @@ class controller {
                     } else {
 
                         if (!$DB->insert_record('bulkcertification_objectives', $objective)) {
-                            $bulklogs['logs'][] = get_string('bulkerroradding', 'format_bulkcertification', $k);
+                            $bulklogs['error'][] = get_string('bulkerroradding', 'format_bulkcertification', $k);
+                        } else {
+                            $bulklogs['logs'][] = get_string('bulkadded', 'format_bulkcertification', $k);
                         }
                     }
                 }
@@ -1205,7 +1207,7 @@ class controller {
                     if ($DB->insert_record('bulkcertification_issues', $issue)) {
 
                         if ($sendmail) {
-                            if ($externaluser->email) {
+                            if ($user->email) {
                                 if (\format_bulkcertification\controller::email_message($issuecert, $user, $filename)) {
                                     $data->pagemessages[] = get_string('certificate_ok', 'format_bulkcertification', $filename);
                                 } else {
