@@ -532,7 +532,7 @@ class controller {
                 $newuser->email = '';
                 if (property_exists($externaluser, 'email')) {
                     $externaluser->email = trim($externaluser->email);
-                    if (empty($externaluser->email)) {
+                    if (!empty($externaluser->email)) {
                         $newuser->email = $externaluser->email;
                     }
                 }
@@ -777,7 +777,7 @@ class controller {
         $a->fullname    = $user->fullname;
         $a->certificate = $filename;
         $a->course      = $issuecert->coursename;
-        $a->url         = $CFG->wwwroot . '/blocks/simple_certificate/view.php?uid=' . $user->id;
+        $a->url         = $CFG->wwwroot . '/mod/simplecertificate/certificates.php';
         $a->username    = $user->username;
         $a->password    = $user->username;
         $a->sitename    = format_string($site->fullname);
