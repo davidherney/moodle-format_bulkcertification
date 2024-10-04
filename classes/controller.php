@@ -39,7 +39,7 @@ class controller {
      */
     public static $otherfields = ['firstname', 'lastname', 'email', 'phone1', 'phone2', 'institution', 'department', 'address',
                                     'city', 'country', 'lang', 'imagealt', 'lastnamephonetic', 'firstnamephonetic', 'middlename',
-                                    'alternatename'];
+                                    'alternatename', 'idnumber'];
 
     /**
      * Add a new objective.
@@ -257,8 +257,12 @@ class controller {
                     $user->$field = trim($one->$field);
                 }
 
+                $otherfields = self::$otherfields;
+                // The password is a special field. Optional for new users, not used for existing users.
+                $otherfields[] = 'password';
+
                 // Load the optional fields data.
-                foreach (self::$otherfields as $field) {
+                foreach ($otherfields as $field) {
                     if (property_exists($one, $field)) {
 
                         if ($field == 'email') {
@@ -320,6 +324,9 @@ class controller {
             $logs['errors'][] = get_string('badcolumnslength', 'format_bulkcertification', count($requiredfields));
             return $logs;
         }
+
+        // The password is a special field. Optional for new users, not used for existing users.
+        $otherfields[] = 'password';
 
         // Optional fields.
         foreach ($headers as $m => $field) {
@@ -567,6 +574,13 @@ class controller {
                     continue;
                 }
 
+                // The password is optional. If not present, the password is set automatically.
+                if (property_exists($externaluser, 'password')) {
+                    $newuser->password = trim($externaluser->password);
+                    // Clean the password.
+                    $newuser->password = clean_param($newuser->password, PARAM_TEXT);
+                }
+
                 // Optional fields.
                 foreach (self::$otherfields as $field) {
 
@@ -654,7 +668,15 @@ class controller {
             return null;
         }
 
-        $newuser->password = 'bulkcertification';
+        $newpassword = false;
+        $tmppassword = '';
+        if (empty($newuser->password)) {
+            $newuser->password = 'bulkcertification';
+            $newpassword = true;
+        } else {
+            $tmppassword = $newuser->password;
+        }
+
         $newuser->modified = time();
         $newuser->confirmed = 1;
         $newuser->auth = 'manual';
@@ -669,8 +691,10 @@ class controller {
         if ($id) {
             $user = $DB->get_record('user', ['id' => $id]);
 
-            if ($sendmail) {
+            if ($newpassword && $sendmail) {
                 setnew_password_and_mail($user);
+            } else if (!empty($tmppassword)) {
+                update_internal_user_password($user, $tmppassword);
             }
 
             return $user;
@@ -779,7 +803,7 @@ class controller {
         $a->course      = $issuecert->coursename;
         $a->url         = $CFG->wwwroot . '/mod/simplecertificate/certificates.php';
         $a->username    = $user->username;
-        $a->password    = $user->username;
+        $a->password    = !property_exists($user, 'password') ? '' : $user->password;
         $a->sitename    = format_string($site->fullname);
         $a->admin       = generate_email_signoff();
 
