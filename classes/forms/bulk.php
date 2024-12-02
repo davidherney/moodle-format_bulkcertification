@@ -64,7 +64,11 @@ class bulk extends moodleform {
         $mform->addElement('select', 'template', get_string('template', 'format_bulkcertification'), $certificates);
         $mform->addHelpButton('template', 'template', 'format_bulkcertification');
 
-        $codes = $DB->get_records_menu('bulkcertification_objectives', ['courseid' => $this->_data->id], '', 'id, name');
+        $codes = [];
+        $objectives = $DB->get_records('bulkcertification_objectives', ['courseid' => $this->_data->id], '', 'id, name, code');
+        foreach ($objectives as $key => $objective) {
+            $codes[$key] = $objective->name . ' (' . $objective->code . ')';
+        }
         $mform->addElement('searchableselector', 'code', get_string('objective', 'format_bulkcertification'), $codes);
         $mform->addRule('code', get_string('required'), 'required', null, 'client');
 
