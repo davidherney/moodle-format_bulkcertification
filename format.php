@@ -52,6 +52,3 @@ $renderer = $PAGE->get_renderer('format_bulkcertification');
 $outputclass = $format->get_output_classname('content');
 $widget = new $outputclass($format);
 echo $renderer->render($widget);
-
-// Include course format js module.
-$PAGE->requires->js('/course/format/topics/format.js');

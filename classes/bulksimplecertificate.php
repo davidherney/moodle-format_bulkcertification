@@ -341,6 +341,7 @@ class bulksimplecertificate extends \simplecertificate {
 
         $a = new \stdClass();
         $a->username = strip_tags(fullname($user));
+        $a->userfullname = $a->username;
         $a->idnumber = strip_tags($user->idnumber);
         $a->firstname = strip_tags($user->firstname);
         $a->lastname = strip_tags($user->lastname);
@@ -351,6 +352,13 @@ class bulksimplecertificate extends \simplecertificate {
         $a->department = strip_tags($user->department);
         $a->address = strip_tags($user->address);
         $a->city = strip_tags($user->city);
+
+        $enableidentity = get_config('simplecertificate', 'enableidentity');
+        if ($enableidentity) {
+            $a->identity = strip_tags($user->username);
+        } else {
+            $a->identity = '';
+        }
 
         // Add userimage url only if have a picture.
         if ($user->picture > 0) {
@@ -410,8 +418,34 @@ class bulksimplecertificate extends \simplecertificate {
             $a->teachers = implode("<br>", $t);
         }
 
-        // Fetch user actitivy restuls.
-        $a->userresults = $this->get_user_results($issuecert->userid);
+        // Fetch user activity restuls.
+        $a->userresults = '';
+        $a->listuserresults = '';
+        $a->tableuserresults = '';
+
+        if (strpos($certtext, '{USERRESULTS}') !== false) {
+            $a->userresults = $this->get_user_results($issuecert->userid);
+        }
+
+        if (strpos($certtext, '{LISTUSERRESULTS}') !== false) {
+            $a->listuserresults = $this->get_user_results($issuecert->userid, 'list');
+        }
+
+        if (strpos($certtext, '{TABLEUSERRESULTS}') !== false) {
+            $a->tableuserresults = $this->get_user_results($issuecert->userid, 'table');
+        }
+
+        if (strpos($certtext, '{USERGRADES}') !== false) {
+            $a->usergrades = $this->get_user_results($issuecert->userid, 'text', true);
+        }
+
+        if (strpos($certtext, '{LISTUSERGRADES}') !== false) {
+            $a->listusergrades = $this->get_user_results($issuecert->userid, 'list', true);
+        }
+
+        if (strpos($certtext, '{TABLEUSERGRADES}') !== false) {
+            $a->tableusergrades = $this->get_user_results($issuecert->userid, 'table', true);
+        }
 
         // Get User role name in course.
         // Changed from original: The role in the course does not apply because the user does not actually enroll.
@@ -474,7 +508,7 @@ class bulksimplecertificate extends \simplecertificate {
      *
      * @param int $userid the user id, if none are supplied, gets $USER->id
      */
-    protected function get_user_results($userid = null) {
+    protected function get_user_results($userid = null, $format = 'text', $all = false) {
 
         // Changed from original: Grades are not taken into account at all.
         return 'N/A';

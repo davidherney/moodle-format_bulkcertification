@@ -1,6 +1,6 @@
 # COURSE FORMAT Bulk certification
 
-Package tested in: 4.1+.
+Package tested in: 4.5+.
 
 ## QUICK INSTALL
 
@@ -18,6 +18,9 @@ Download zip package, extract the bulkcertification folder and upload this folde
 * Ideas?
 
 ## IN VERSION
+
+### 2025053000:
+* Compatibility with Moodle 4.5
 
 ### 2024051202:
 * Refactoring to be compatible with moodle 4.1+

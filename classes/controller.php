@@ -860,8 +860,7 @@ class controller {
                                             new \moodle_url($returnurl, $optionsyes),
                                         $returnurl);
                 return;
-            }
-            else if (data_submitted()) {
+            } else if (data_submitted()) {
                 // Confirmed, delete the bulk.
                 \format_bulkcertification\controller::delete_certificates_group($delete, $course);
             }

@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2024051203.13;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2025053000;        // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2022111800;        // Requires this Moodle version.
 $plugin->component = 'format_bulkcertification';    // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_BETA;
-$plugin->dependencies = ['format_topics' => 2022112801, 'mod_simplecertificate' => 2024051101.02];
+$plugin->dependencies = ['format_topics' => 2024100700, 'mod_simplecertificate' => 2024051106];
