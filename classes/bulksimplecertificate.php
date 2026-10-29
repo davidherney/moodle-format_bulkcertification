@@ -171,7 +171,7 @@ class bulksimplecertificate extends \simplecertificate {
      *
      * @param int $moduleid
      * @param int $userid
-     * @return stdClass bool the mod object if it exists, false otherwise
+     * @return \stdClass|bool The mod object if it exists, false otherwise
      */
     protected function get_mod_grade($moduleid, $userid) {
         // Changed from original: The grade cannot be associated with a module.
@@ -540,6 +540,7 @@ class bulksimplecertificate extends \simplecertificate {
      * Verify if user meet issue conditions
      *
      * @param int $user User id
+     * @param bool $chkcompletation Whether to check completion
      * @return string null if user meet issued conditions, or an text with erro
      */
     protected function can_issue($user = null, $chkcompletation = true) {
@@ -560,7 +561,7 @@ class bulksimplecertificate extends \simplecertificate {
     /**
      * Download a bulk of certificates.
      *
-     * @param stdClass $bulk The bulk certificate object
+     * @param \stdClass $bulk The bulk certificate object
      * @param array $issues The issues to download
      * @return void
      */

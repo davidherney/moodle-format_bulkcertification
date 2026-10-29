@@ -1,13 +1,18 @@
-/** Styles included in bulkcertification course format */
+.format-bulkcertification {
+    #page-content div.buttons {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        margin: 5px;
+        background-color: var(--bs-light);
+    }
 
-.format-bulkcertification #page-content div.buttons {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    margin: 5px;
-    background-color: var(--bs-light);
+    .format_bulkcertification_table em.note-info {
+        font-size: 80%;
+    }
+
+    #topofscroll {
+        max-width: unset!important;
+    }
 }
 
-.format_bulkcertification_table em.note-info {
-    font-size: 80%;
-}
