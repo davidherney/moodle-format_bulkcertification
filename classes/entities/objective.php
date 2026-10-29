@@ -42,7 +42,6 @@ use core_reportbuilder\local\report\filter;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class objective extends base {
-
     /**
      * Database tables that this entity uses
      *
@@ -50,7 +49,7 @@ class objective extends base {
      */
     protected function get_default_tables(): array {
         return [
-            'bulkcertification_objectives',
+            'format_bulkcertification_objectives',
         ];
     }
 
@@ -92,7 +91,7 @@ class objective extends base {
      * @throws \coding_exception
      */
     protected function get_all_columns(): array {
-        $objectivealias = $this->get_table_alias('bulkcertification_objectives');
+        $objectivealias = $this->get_table_alias('format_bulkcertification_objectives');
 
         $columns[] = (new column(
             'id',
@@ -143,8 +142,8 @@ class objective extends base {
             ->add_fields("$objectivealias.type")
             ->set_is_sortable(true)
             ->set_type(column::TYPE_TEXT)
-            ->set_callback(static function(?string $type): string {
-                // Mdlcode assume: $type ['local','remote']
+            ->set_callback(static function (?string $type): string {
+                // The $type parameter can be 'local' or 'remote'.
                 return get_string('type_' . $type, 'format_bulkcertification');
             });
 
@@ -159,7 +158,7 @@ class objective extends base {
     protected function get_all_filters(): array {
 
         $filters = [];
-        $objectivealias = $this->get_table_alias('bulkcertification_objectives');
+        $objectivealias = $this->get_table_alias('format_bulkcertification_objectives');
 
         $filters[] = (new filter(
             text::class,
@@ -196,7 +195,7 @@ class objective extends base {
             "$objectivealias.type",
         ))
             ->add_joins($this->get_joins())
-            ->set_options_callback(static function(): array {
+            ->set_options_callback(static function (): array {
                 return self::get_options_for_type();
             });
 
@@ -214,5 +213,4 @@ class objective extends base {
             'remote' => new lang_string('type_remote', 'format_bulkcertification'),
         ];
     }
-
 }

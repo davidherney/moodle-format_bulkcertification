@@ -18,6 +18,8 @@ namespace format_bulkcertification;
 
 use core_reportbuilder\system_report_factory;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot . '/user/lib.php');
 
 /**
@@ -28,7 +30,6 @@ require_once($CFG->dirroot . '/user/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class controller {
-
     /**
      * @var array List of required user fields.
      */
@@ -48,7 +49,7 @@ class controller {
      * @param stdClass $data
      * @return array With two elements: logs and errors.
      */
-    public static function add_objective($courseid, $data) : array {
+    public static function add_objective($courseid, $data): array {
         global $DB;
 
         $addlogs = [
@@ -63,7 +64,7 @@ class controller {
         $objective->hours = $data->hours;
         $objective->type = $data->type;
 
-        if ($DB->insert_record('bulkcertification_objectives', $objective)) {
+        if ($DB->insert_record('format_bulkcertification_objectives', $objective)) {
             $addlogs['logs'][] = get_string('objective_added', 'format_bulkcertification');
         } else {
             $addlogs['errors'][] = get_string('objectives_erroradding', 'format_bulkcertification');
@@ -78,7 +79,7 @@ class controller {
      * @param int $objectiveid
      * @return array With two elements: logs and errors.
      */
-    public static function delete_objective($objectiveid) : array {
+    public static function delete_objective($objectiveid): array {
         global $DB;
 
         $logs = [
@@ -86,7 +87,7 @@ class controller {
             'errors' => [],
         ];
 
-        if ($DB->delete_records('bulkcertification_objectives', ['id' => $objectiveid])) {
+        if ($DB->delete_records('format_bulkcertification_objectives', ['id' => $objectiveid])) {
             $logs['logs'][] = get_string('objectives_deleted', 'format_bulkcertification');
         } else {
             $logs['errors'][] = get_string('objectives_errordeleting', 'format_bulkcertification');
@@ -102,7 +103,7 @@ class controller {
      * @param stdClass $bulkdata
      * @return array With two elements: logs and errors.
      */
-    public static function import_objectives($courseid, $bulkdata) : array {
+    public static function import_objectives($courseid, $bulkdata): array {
         global $DB;
 
         $delimiters = \format_bulkcertification\forms\objectivesimport::DELIMITERS;
@@ -119,13 +120,12 @@ class controller {
         $lines = explode("\n", $bulkdata->objectiveslist);
 
         if ($bulkdata->mode == \format_bulkcertification::IMPORT_REPLACE) {
-            $DB->delete_records('bulkcertification_objectives');
+            $DB->delete_records('format_bulkcertification_objectives');
             $bulklogs['logs'][] = get_string('recordsdeleted', 'format_bulkcertification');
         }
 
         $k = 0;
-        foreach($lines as $line) {
-
+        foreach ($lines as $line) {
             $k++;
             $line = trim($line);
             if (empty($line)) {
@@ -155,14 +155,12 @@ class controller {
                 } else if (strlen($objective->hours) > 4) {
                     $bulklogs['errors'][] = get_string('bulkhoursmaxerror', 'format_bulkcertification', $k);
                 } else {
-
                     // Check for duplicate course-code.
                     $params = ['courseid' => $courseid, 'code' => $objective->code];
-                    if ($DB->get_record('bulkcertification_objectives', $params, '*', IGNORE_MULTIPLE)) {
+                    if ($DB->get_record('format_bulkcertification_objectives', $params, '*', IGNORE_MULTIPLE)) {
                         $bulklogs['errors'][] = get_string('bulkcodetaken', 'format_bulkcertification', $k);
                     } else {
-
-                        if (!$DB->insert_record('bulkcertification_objectives', $objective)) {
+                        if (!$DB->insert_record('format_bulkcertification_objectives', $objective)) {
                             $bulklogs['error'][] = get_string('bulkerroradding', 'format_bulkcertification', $k);
                         } else {
                             $bulklogs['logs'][] = get_string('bulkadded', 'format_bulkcertification', $k);
@@ -181,8 +179,7 @@ class controller {
      * @param object $objective
      * @return object|null Group information.
      */
-    public static function get_group($objective) : ?object {
-
+    public static function get_group($objective): ?object {
         $group = new \stdClass();
         $group->name = $objective->name;
         $group->code = $objective->code;
@@ -192,7 +189,6 @@ class controller {
         $group->users = [];
 
         if ($objective->type == 'remote') {
-
             $config = get_config('format_bulkcertification');
             if (empty($config->wsuri)) {
                 throw new \moodle_exception('wsuriemptyerror', 'format_bulkcertification');
@@ -245,7 +241,6 @@ class controller {
 
             // Load the users information.
             foreach ($response->users as $one) {
-
                 $user = new \stdClass();
 
                 // Check if the required fields are present.
@@ -264,13 +259,11 @@ class controller {
                 // Load the optional fields data.
                 foreach ($otherfields as $field) {
                     if (property_exists($one, $field)) {
-
                         if ($field == 'email') {
                             $user->email = clean_param(trim($one->email), PARAM_EMAIL);
                         } else {
                             $user->$field = trim($one->$field);
                         }
-
                     }
                 }
 
@@ -351,7 +344,6 @@ class controller {
         }
 
         foreach ($userslist as $k => $one) {
-
             // Because the first row is used to fields names and list start in position 0.
             $k = $k + 2;
 
@@ -417,18 +409,15 @@ class controller {
         $columns = array_merge($requiredfields, $otherfields);
 
         foreach ($userslist as $k => $one) {
-
             // Not use empty objects or other data representation.
             if (empty($one) || !is_object($one)) {
                 continue;
             }
 
             $user = new \stdClass();
-
             $baddata = false;
 
             foreach ($columns as $field) {
-
                 // Required fields.
                 if (in_array($field, $requiredfields) && (!property_exists($one, $field) || empty($one->$field))) {
                     $a = (object)['field' => $field, 'row' => $k];
@@ -516,7 +505,7 @@ class controller {
                 continue;
             }
 
-            $user = $DB->get_record('user', ['username'=> $username]);
+            $user = $DB->get_record('user', ['username' => $username]);
 
             if (!$user) {
                 $newuser = new \stdClass();
@@ -556,7 +545,6 @@ class controller {
                         $tmpdefaultemail = str_replace('{firstname}', $externaluser->firstname, $tmpdefaultemail);
                         $tmpdefaultemail = str_replace('{lastname}', $externaluser->lastname, $tmpdefaultemail);
                         $newuser->email = $tmpdefaultemail;
-
                     } else {
                         $a = (object)['field' => 'email', 'username' => $username];
                         $logs['errors'][] = get_string('requireduserfield', 'format_bulkcertification', $a);
@@ -583,7 +571,6 @@ class controller {
 
                 // Optional fields.
                 foreach (self::$otherfields as $field) {
-
                     // Not overwrite the pre-existing fields.
                     if (property_exists($newuser, $field)) {
                         continue;
@@ -613,7 +600,6 @@ class controller {
 
                 $fields = array_merge(self::$requiredfields, self::$otherfields);
                 foreach ($fields as $field) {
-
                     // Only update if the local field is empty.
                     if (empty($user->$field)) {
                         if (property_exists($externaluser, $field) && $user->$field != $externaluser->$field) {
@@ -633,7 +619,6 @@ class controller {
                 $logs['errors'][] = get_string('msg_error_not_create_user', 'format_bulkcertification', $externaluser->username);
                 continue;
             } else {
-
                 // Save custom fields.
                 foreach ($externaluser as $key => $value) {
                     if (strpos($key, 'profile_') === 0) {
@@ -644,7 +629,6 @@ class controller {
                 profile_save_data($user);
                 $realusers[$user->username] = $user;
             }
-
         }
 
         $logs['users'] = $realusers;
@@ -663,8 +647,13 @@ class controller {
         global $CFG, $DB;
 
         // Check required moodle fields to new users.
-        if (!$newuser || empty($newuser->username) || empty($newuser->email)
-                || empty($newuser->firstname) || empty($newuser->lastname)) {
+        if (
+            !$newuser ||
+            empty($newuser->username) ||
+            empty($newuser->email) ||
+            empty($newuser->firstname) ||
+            empty($newuser->lastname)
+        ) {
             return null;
         }
 
@@ -717,20 +706,19 @@ class controller {
         $simplecertificate = new \format_bulkcertification\bulksimplecertificate(null, null, $course);
 
         if ($simplecertificate->delete_issue($simpleissue)) {
-            $DB->delete_records('bulkcertification_issues', ['id' => $issue->id]);
+            $DB->delete_records('format_bulkcertification_issues', ['id' => $issue->id]);
 
             $event = \format_bulkcertification\event\issue_deleted::create([
                 'objectid' => $issue->id,
                 'context' => $PAGE->context,
             ]);
-            $event->add_record_snapshot('bulkcertification_issues', $issue);
+            $event->add_record_snapshot('format_bulkcertification_issues', $issue);
             $event->trigger();
 
             return true;
         }
 
         return false;
-
     }
 
     /**
@@ -743,20 +731,20 @@ class controller {
     private static function delete_certificates_group($delete, $course) {
         global $DB, $PAGE;
 
-        $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $delete], '*', MUST_EXIST);
+        $bulk = $DB->get_record('format_bulkcertification_bulk', ['id' => $delete], '*', MUST_EXIST);
 
         $event = \format_bulkcertification\event\bulk_deleted::create([
             'objectid' => $bulk->id,
             'context' => $PAGE->context,
         ]);
-        $event->add_record_snapshot('bulkcertification_bulk', $bulk);
+        $event->add_record_snapshot('format_bulkcertification_bulk', $bulk);
         $event->trigger();
 
-        $issues = $DB->get_records('bulkcertification_issues', ['bulkid' => $delete]);
+        $issues = $DB->get_records('format_bulkcertification_issues', ['bulkid' => $delete]);
 
         $alldeleted = true;
-        if($issues) {
-            foreach($issues as $issue) {
+        if ($issues) {
+            foreach ($issues as $issue) {
                 $simpleissue = $DB->get_record('simplecertificate_issues', ['id' => $issue->issueid]);
 
                 if ($simpleissue) {
@@ -770,11 +758,10 @@ class controller {
 
         if ($alldeleted) {
             // If not error deleting the issues, delete the bulk.
-            return $DB->delete_records('bulkcertification_bulk', ['id' => $bulk->id]);
+            return $DB->delete_records('format_bulkcertification_bulk', ['id' => $bulk->id]);
         } else {
             return false;
         }
-
     }
 
     /**
@@ -816,9 +803,7 @@ class controller {
 
         $contact = \core_user::get_support_user();
 
-
         return email_to_user($user, $contact, $subject, $messagetext, $messagehtml);
-
     }
 
     /**
@@ -836,15 +821,15 @@ class controller {
         $data->activecertified = true;
         $data->title = get_string('bulklist', 'format_bulkcertification');
 
-        $delete       = optional_param('delete', 0, PARAM_INT);
-        $confirm      = optional_param('confirm', '', PARAM_ALPHANUM); //md5 confirmation hash
+        $delete = optional_param('delete', 0, PARAM_INT);
+        $confirm = optional_param('confirm', '', PARAM_ALPHANUM); // Md5 confirmation hash.
 
         $userformatdatetime = get_string('strftimedatetimeshort', 'langconfig');
         $candelete = has_capability('format/bulkcertification:deleteissues', $coursecontext);
 
-        // Delete a group of certificates, after confirmation
+        // Delete a group of certificates, after confirmation.
         if ($candelete && $delete && confirm_sesskey()) {
-            $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $delete], '*', MUST_EXIST);
+            $bulk = $DB->get_record('format_bulkcertification_bulk', ['id' => $delete], '*', MUST_EXIST);
 
             if ($confirm != md5($delete)) {
                 $returnurl = new \moodle_url('/course/view.php', [
@@ -856,22 +841,28 @@ class controller {
                 $bulktime = userdate($bulk->bulktime, $userformatdatetime);
                 $infodeletetext = "'{$bulk->certificatename} - {$bulk->code} - {$bulktime}'";
                 $data->certifiedcontent = $OUTPUT->confirm(
-                                        get_string('deletecheck', '', $infodeletetext),
-                                            new \moodle_url($returnurl, $optionsyes),
-                                        $returnurl);
+                    get_string('deletecheck', '', $infodeletetext),
+                    new \moodle_url($returnurl, $optionsyes),
+                    $returnurl
+                );
                 return;
             } else if (data_submitted()) {
                 // Confirmed, delete the bulk.
-                \format_bulkcertification\controller::delete_certificates_group($delete, $course);
+                self::delete_certificates_group($delete, $course);
             }
         }
 
         // List the bulk certified.
-        $report = system_report_factory::create(\format_bulkcertification\systemreports\certified::class,
-                                                    $coursecontext, '', '', 0, ['courseid' => $course->id]);
+        $report = system_report_factory::create(
+            \format_bulkcertification\systemreports\certified::class,
+            $coursecontext,
+            '',
+            '',
+            0,
+            ['courseid' => $course->id]
+        );
 
         $data->certifiedcontent = $report->output();
-
     }
 
     /**
@@ -893,13 +884,13 @@ class controller {
         $delete = optional_param('delete', 0, PARAM_INT);
         $confirm = optional_param('confirm', '', PARAM_ALPHANUM); // Md5 confirmation hash.
 
-        $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $bulkid], '*', MUST_EXIST);
+        $bulk = $DB->get_record('format_bulkcertification_bulk', ['id' => $bulkid], '*', MUST_EXIST);
 
         $candelete = has_capability('format/bulkcertification:deleteissues', $coursecontext);
 
         // Delete a bulk certification, after confirmation.
         if ($candelete && $delete && confirm_sesskey()) {
-            $issue          = $DB->get_record('bulkcertification_issues', ['id' => $delete], '*', MUST_EXIST);
+            $issue          = $DB->get_record('format_bulkcertification_issues', ['id' => $delete], '*', MUST_EXIST);
             $simpleissue    = $DB->get_record('simplecertificate_issues', ['id' => $issue->issueid], '*', MUST_EXIST);
             $user           = $DB->get_record('user', ['id' => $simpleissue->userid], '*', MUST_EXIST);
             $fullname = fullname($user);
@@ -914,15 +905,14 @@ class controller {
                                                                 ]);
                 $optionsyes = ['delete' => $delete, 'confirm' => md5($delete), 'sesskey' => sesskey()];
                 $data->certifiedcontent = $OUTPUT->confirm(
-                                        get_string('deletecheck', '',
-                                                    get_string('certificate_owner', 'format_bulkcertification', $fullname)),
-                                        new \moodle_url($returnurl, $optionsyes),
-                                        $returnurl);
+                    get_string('deletecheck', '', get_string('certificate_owner', 'format_bulkcertification', $fullname)),
+                    new \moodle_url($returnurl, $optionsyes),
+                    $returnurl
+                );
                 return;
-            }
-            else if (data_submitted()) {
+            } else if (data_submitted()) {
                 // Confirmed, delete the issue.
-                \format_bulkcertification\controller::delete_one_certificate($course, $issue, $simpleissue);
+                self::delete_one_certificate($course, $issue, $simpleissue);
             }
         }
 
@@ -937,7 +927,7 @@ class controller {
         $a->remote = $bulk->remotehours;
         $hoursformated = get_string('hours_multi', 'format_bulkcertification', $a);
 
-        $cm = get_coursemodule_from_instance( 'simplecertificate', $bulk->certificateid);
+        $cm = get_coursemodule_from_instance('simplecertificate', $bulk->certificateid);
         if (!$cm) {
             $templateurl = '';
         } else {
@@ -952,8 +942,14 @@ class controller {
         $data->bulk->hoursformated = $hoursformated;
         $data->bulk->templateurl = $templateurl;
 
-        $report = system_report_factory::create(\format_bulkcertification\systemreports\issues::class,
-                        $coursecontext, '', '', 0, ['bulkid' => $bulk->id, 'courseid' => $course->id]);
+        $report = system_report_factory::create(
+            \format_bulkcertification\systemreports\issues::class,
+            $coursecontext,
+            '',
+            '',
+            0,
+            ['bulkid' => $bulk->id, 'courseid' => $course->id]
+        );
 
         $data->certifiedcontent = $report->output();
     }
@@ -977,7 +973,7 @@ class controller {
 
         // Delete a objective, after confirmation.
         if ($delete && confirm_sesskey()) {
-            $objective = $DB->get_record('bulkcertification_objectives', ['id' => $delete], '*', MUST_EXIST);
+            $objective = $DB->get_record('format_bulkcertification_objectives', ['id' => $delete], '*', MUST_EXIST);
             $data->title = get_string('objective_delete', 'format_bulkcertification');
 
             if ($confirm != md5($delete)) {
@@ -987,14 +983,14 @@ class controller {
                                                                 ]);
                 $optionsyes = ['delete' => $delete, 'confirm' => md5($delete), 'sesskey' => sesskey()];
                 $data->formcontent = $OUTPUT->confirm(
-                                        get_string('deletecheck', '', "'{$objective->name} - {$objective->code}'"),
-                                        new \moodle_url($returnurl, $optionsyes),
-                                        $returnurl);
+                    get_string('deletecheck', '', "'{$objective->name} - {$objective->code}'"),
+                    new \moodle_url($returnurl, $optionsyes),
+                    $returnurl
+                );
                 $data->showform = true;
-            }
-            else if (data_submitted()) {
+            } else if (data_submitted()) {
                 // Confirmed, delete the objective.
-                $deletelogs = \format_bulkcertification\controller::delete_objective($delete);
+                $deletelogs = self::delete_objective($delete);
                 $data->pagemessages = array_merge($data->pagemessages, $deletelogs['logs']);
                 $data->pageerrors = array_merge($data->pageerrors, $deletelogs['errors']);
             }
@@ -1008,7 +1004,7 @@ class controller {
                 $form = new \format_bulkcertification\forms\objective(null, ['data' => $localdata]);
 
                 if ($formdata = $form->get_data()) {
-                    $addlogs = \format_bulkcertification\controller::add_objective($course->id, $formdata);
+                    $addlogs = self::add_objective($course->id, $formdata);
                     $data->pagemessages = array_merge($data->pagemessages, $addlogs['logs']);
                     $data->pageerrors = array_merge($data->pageerrors, $addlogs['errors']);
 
@@ -1017,12 +1013,10 @@ class controller {
                         $data->formcontent = $form->render();
                         $data->showform = true;
                     }
-
                 } else {
                     $data->formcontent = $form->render();
                     $data->showform = true;
                 }
-
             } else if ($operation == \format_bulkcertification::OP_IMPORT) {
                 $data->title = get_string('importobjectives', 'format_bulkcertification');
 
@@ -1032,7 +1026,7 @@ class controller {
                 $form = new \format_bulkcertification\forms\objectivesimport(null, ['data' => $localdata]);
 
                 if ($formdata = $form->get_data()) {
-                    $bulklogs = \format_bulkcertification\controller::import_objectives($course->id, $formdata);
+                    $bulklogs = self::import_objectives($course->id, $formdata);
                     $data->pagemessages = array_merge($data->pagemessages, $bulklogs['logs']);
                     $data->pageerrors = array_merge($data->pageerrors, $bulklogs['errors']);
 
@@ -1044,19 +1038,21 @@ class controller {
                     $data->formcontent = $form->render();
                     $data->showform = true;
                 }
-
             }
-
         }
 
         if (!property_exists($data, 'showform') || !$data->showform) {
-
             // The objectives are listed by default.
-            $report = system_report_factory::create(\format_bulkcertification\systemreports\objectives::class,
-                                                        $coursecontext, '', '', 0, ['courseid' => $course->id]);
+            $report = system_report_factory::create(
+                \format_bulkcertification\systemreports\objectives::class,
+                $coursecontext,
+                '',
+                '',
+                0,
+                ['courseid' => $course->id]
+            );
             $data->objectivescontent = $report->output();
         }
-
     }
 
     /**
@@ -1084,16 +1080,15 @@ class controller {
         $form = new \format_bulkcertification\forms\bulk(null, ['data' => $localdata]);
 
         if ($cancel || !$operation || $operation == \format_bulkcertification::OP_SEARCH) {
-
             if (!$cancel && $postbulk = $form->get_data()) {
-                $objective = $DB->get_record('bulkcertification_objectives', ['id' => $postbulk->code]);
+                $objective = $DB->get_record('format_bulkcertification_objectives', ['id' => $postbulk->code]);
 
                 if (!$objective) {
                     throw new \moodle_exception('invalidobjective', 'format_bulkcertification');
                 }
 
                 try {
-                    $group = \format_bulkcertification\controller::get_group($objective);
+                    $group = self::get_group($objective);
                 } catch (\moodle_exception $e) {
                     $data->pageerrors[] = $e->getMessage();
                     $data->formcontent = $form->render();
@@ -1113,14 +1108,13 @@ class controller {
                     $buildform = new \format_bulkcertification\forms\remotebuild(null, ['data' => $localdata]);
                 }
                 $data->formcontent = $buildform->render();
-
             } else {
                 $data->formcontent = $form->render();
             }
         } else if ($operation == \format_bulkcertification::OP_SAVE) {
             $code = optional_param('code', 0, PARAM_INT);
 
-            $objective = $DB->get_record('bulkcertification_objectives', ['id' => $code], '*', MUST_EXIST);
+            $objective = $DB->get_record('format_bulkcertification_objectives', ['id' => $code], '*', MUST_EXIST);
 
             if ($objective->type == 'local') {
                 $buildform = new \format_bulkcertification\forms\localbuild(null, ['data' => $localdata]);
@@ -1142,12 +1136,12 @@ class controller {
             // Users are read from the objective source.
             if ($objective->type == 'local') {
                 // Group for local is only a prototype.
-                $group = \format_bulkcertification\controller::get_group($objective);
-                $log = \format_bulkcertification\controller::read_local_users($postbuild);
+                $group = self::get_group($objective);
+                $log = self::read_local_users($postbuild);
             } else {
                 $groupdata = $postbuild->remotedata;
                 $group = json_decode(base64_decode($groupdata));
-                $log = \format_bulkcertification\controller::read_remote_users($group->users);
+                $log = self::read_remote_users($group->users);
             }
 
             $data->pagemessages = array_merge($data->pagemessages, $log['logs']);
@@ -1161,11 +1155,11 @@ class controller {
             }
 
             $objectivedate = $postbuild->objectivedate;
-            $customparams = \format_bulkcertification\controller::process_customparams($postbuild->customparams);
+            $customparams = self::process_customparams($postbuild->customparams);
 
             $sendmail = (property_exists($postbuild, 'sendmail') && $postbuild->sendmail);
 
-            $logrealusers = \format_bulkcertification\controller::real_users($group->users, $sendmail);
+            $logrealusers = self::real_users($group->users, $sendmail);
             $data->pagemessages = array_merge($data->pagemessages, $logrealusers['logs']);
             $realusers = $logrealusers['users'];
 
@@ -1178,7 +1172,7 @@ class controller {
 
             // Load the certificate object.
             $cm = get_coursemodule_from_instance('simplecertificate', $certificate->id, $course->id);
-            $context = \context_module::instance ($cm->id);
+            $context = \context_module::instance($cm->id);
             $certificate->coursehours = $group->hours;
             $certificate->certdate = $objectivedate;
             $certificate->customparams = $customparams;
@@ -1201,7 +1195,7 @@ class controller {
             $bulkissue->courseid        = $course->id;
             $bulkissue->customparams    = $customparams ? json_encode($customparams) : '[]';
 
-            $bulkissue->id = $DB->insert_record('bulkcertification_bulk', $bulkissue, true);
+            $bulkissue->id = $DB->insert_record('format_bulkcertification_bulk', $bulkissue, true);
 
             $event = \format_bulkcertification\event\bulk_created::create([
                 'objectid' => $course->id,
@@ -1212,14 +1206,14 @@ class controller {
             ]);
             $event->trigger();
 
-            foreach($group->users as $externaluser) {
+            foreach ($group->users as $externaluser) {
                 $user = $realusers[$externaluser->username];
 
                 $issuecert = $simplecertificate->get_issue($user);
                 $issuecert->tmpuser = $externaluser;
                 $issuecert->haschange = true;
-                if ($file = $simplecertificate->get_issue_file($issuecert)) {
 
+                if ($file = $simplecertificate->get_issue_file($issuecert)) {
                     $user->fullname = fullname($user);
                     $filename = $file->get_filename();
 
@@ -1227,25 +1221,28 @@ class controller {
                     $issue->issueid = $issuecert->id;
                     $issue->bulkid  = $bulkissue->id;
 
-                    if ($DB->insert_record('bulkcertification_issues', $issue)) {
-
+                    if ($DB->insert_record('format_bulkcertification_issues', $issue)) {
                         if ($sendmail) {
                             if ($user->email) {
-                                if (\format_bulkcertification\controller::email_message($issuecert, $user, $filename)) {
+                                if (self::email_message($issuecert, $user, $filename)) {
                                     $data->pagemessages[] = get_string('certificate_ok', 'format_bulkcertification', $filename);
                                 } else {
-                                    $data->pageerrors[] = get_string('certificate_ok_notemail', 'format_bulkcertification',
-                                                                        $filename);
+                                    $data->pageerrors[] = get_string(
+                                        'certificate_ok_notemail',
+                                        'format_bulkcertification',
+                                        $filename
+                                    );
                                 }
                             } else {
-                                $data->pageerrors[] = get_string('certificate_ok_emailempty', 'format_bulkcertification',
-                                                                        $filename);
+                                $data->pageerrors[] = get_string(
+                                    'certificate_ok_emailempty',
+                                    'format_bulkcertification',
+                                    $filename
+                                );
                             }
-                        }
-                        else {
+                        } else {
                             $data->pagemessages[] = get_string('certificate_ok', 'format_bulkcertification', $filename);
                         }
-
                     } else {
                         $data->pageerrors[] = get_string('certificate_error_ns', 'format_bulkcertification', $user);
                     }
@@ -1254,17 +1251,19 @@ class controller {
                 }
             }
 
-            $urlreturn = new \moodle_url($CFG->wwwroot . '/course/view.php', ['id' => $course->id,
-                                                                                'action' => 'certified',
-                                                                                'op' => 'details',
-                                                                                'bulkid' => $bulkissue->id,
-                                                                            ]);
+            $urlreturn = new \moodle_url(
+                $CFG->wwwroot . '/course/view.php',
+                [
+                    'id' => $course->id,
+                    'action' => 'certified',
+                    'op' => 'details',
+                    'bulkid' => $bulkissue->id,
+                ]
+            );
             $data->formcontent = $OUTPUT->container_start('buttons');
             $data->formcontent .= $OUTPUT->single_button($urlreturn, get_string('showcertified', 'format_bulkcertification'));
             $data->formcontent .= $OUTPUT->container_end();
-
         }
-
     }
 
     /**
@@ -1292,16 +1291,16 @@ class controller {
             } else {
                 $issueid = $bulkorissueid;
             }
-            $issues[] = $DB->get_record('bulkcertification_issues', ['id' => $issueid], '*', MUST_EXIST);
-            $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $issues[0]->bulkid], '*', MUST_EXIST);
+            $issues[] = $DB->get_record('format_bulkcertification_issues', ['id' => $issueid], '*', MUST_EXIST);
+            $bulk = $DB->get_record('format_bulkcertification_bulk', ['id' => $issues[0]->bulkid], '*', MUST_EXIST);
         } else {
             if (!$bulkorissueid) {
                 $bulkid = required_param('bulkid', PARAM_INT);
             } else {
                 $bulkid = $bulkorissueid;
             }
-            $bulk = $DB->get_record('bulkcertification_bulk', ['id' => $bulkid], '*', MUST_EXIST);
-            $issues = $DB->get_records('bulkcertification_issues', ['bulkid' => $bulkid]);
+            $bulk = $DB->get_record('format_bulkcertification_bulk', ['id' => $bulkid], '*', MUST_EXIST);
+            $issues = $DB->get_records('format_bulkcertification_issues', ['bulkid' => $bulkid]);
         }
 
         if (!$cm = get_coursemodule_from_instance('simplecertificate', $bulk->certificateid)) {
@@ -1321,8 +1320,7 @@ class controller {
         $context = \context_module::instance($cm->id);
 
         foreach ($issues as $issue) {
-            if($issue) {
-
+            if ($issue) {
                 $simpleissue = $DB->get_record('simplecertificate_issues', ['id' => $issue->issueid]);
 
                 // Load the certificate object.
@@ -1345,15 +1343,14 @@ class controller {
                     $updatedata = new \stdClass();
                     $updatedata->id = $issue->id;
                     $updatedata->issueid = $simpleissue->id;
-                    $DB->update_record('bulkcertification_issues', $updatedata);
+                    $DB->update_record('format_bulkcertification_issues', $updatedata);
                 }
 
-                if ($file = $simplecertificate->save_pdf_forced($simpleissue, true)){
+                if ($file = $simplecertificate->save_pdf_forced($simpleissue, true)) {
                     $data->pagemessages[] = get_string('certificate_ok', 'format_bulkcertification', $file->get_filename());
                 } else {
                     $data->pageerrors[] = get_string('rebuild_error', 'format_bulkcertification', $simpleissue->id);
                 }
-
             } else {
                 $data->pageerrors[] = get_string('issue_notfound', 'format_bulkcertification');
             }

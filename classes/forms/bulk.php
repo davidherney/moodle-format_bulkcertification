@@ -37,11 +37,10 @@ use moodleform;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bulk extends moodleform {
-
     /**
      * @var object List of local data.
      */
-    protected $_data;
+    protected $localdata;
 
     /**
      * Form definition.
@@ -52,7 +51,7 @@ class bulk extends moodleform {
         $mform = $this->_form;
 
         // This contains the data of this form.
-        $this->_data  = $this->_customdata['data'];
+        $this->localdata  = $this->_customdata['data'];
 
         $certificates = $this->get_certificates();
 
@@ -65,14 +64,14 @@ class bulk extends moodleform {
         $mform->addHelpButton('template', 'template', 'format_bulkcertification');
 
         $codes = [];
-        $objectives = $DB->get_records('bulkcertification_objectives', ['courseid' => $this->_data->id], '', 'id, name, code');
+        $objectives = $DB->get_records('format_bulkcertification_objectives', ['courseid' => $this->localdata->id], '', 'id, name, code');
         foreach ($objectives as $key => $objective) {
             $codes[$key] = $objective->name . ' (' . $objective->code . ')';
         }
         $mform->addElement('searchableselector', 'code', get_string('objective', 'format_bulkcertification'), $codes);
         $mform->addRule('code', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('hidden', 'id', $this->_data->id);
+        $mform->addElement('hidden', 'id', $this->localdata->id);
         $mform->setType('id', PARAM_INT);
 
         $mform->addElement('hidden', 'action', \format_bulkcertification::ACTION_BULK);
@@ -83,8 +82,8 @@ class bulk extends moodleform {
 
         $this->add_action_buttons(false, get_string('search', 'format_bulkcertification'));
 
-        // Finally set the current form data
-        $this->set_data($this->_data);
+        // Finally set the current form data.
+        $this->set_data($this->localdata);
     }
 
     /**

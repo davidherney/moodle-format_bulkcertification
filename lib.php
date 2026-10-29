@@ -23,7 +23,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot. '/course/format/lib.php');
+require_once($CFG->dirroot . '/course/format/lib.php');
 
 /**
  * Main class for the Bulk certification format.
@@ -33,7 +33,6 @@ require_once($CFG->dirroot. '/course/format/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_bulkcertification extends core_courseformat\base {
-
     /**
      * The bulk action key.
      */
@@ -127,38 +126,22 @@ class format_bulkcertification extends core_courseformat\base {
         return false;
     }
 
+    /**
+     * Returns false because the format don't support course index.
+     *
+     * @return bool
+     */
     public function uses_course_index() {
         return false;
     }
 
+    /**
+     * Returns false because the format don't support indentation.
+     *
+     * @return bool
+     */
     public function uses_indentation(): bool {
         return false;
-    }
-
-    /**
-     * Returns the display name of the given section that the course prefers.
-     *
-     * Use section name is specified by user. Otherwise use default ("Topic #").
-     *
-     * @param int|stdClass $section Section object from database or just field section.section
-     * @return string Display name that the course format prefers, e.g. "Topic 2"
-     */
-    public function get_section_name($section) {
-        return $this->get_default_section_name($section);
-    }
-
-    /**
-     * Returns the default section name for the course format.
-     *
-     * If the section number is 0, it will use the string with key = section0name from the course format's lang file.
-     * If the section number is not 0, the base implementation of course_format::get_default_section_name which uses
-     * the string with the key = 'sectionname' from the course format's lang file + the section number will be used.
-     *
-     * @param stdClass $section Section object from database or just field course_sections section
-     * @return string The default value for the section name.
-     */
-    public function get_default_section_name($section) {
-        return parent::get_default_section_name($section);
     }
 
     /**
@@ -203,12 +186,14 @@ class format_bulkcertification extends core_courseformat\base {
     }
 
     /**
-     * Returns false because the format don't support components.
+     * Returns true because the format uses course content components.
+     *
+     * Component support keeps activity menus on get_cm_control_items().
      *
      * @return bool
      */
     public function supports_components() {
-        return false;
+        return true;
     }
 
     /**
@@ -314,7 +299,6 @@ class format_bulkcertification extends core_courseformat\base {
         // Allow the third visibility state inside visible sections or in section 0.
         return false;
     }
-
 }
 
 /**
@@ -325,19 +309,21 @@ class format_bulkcertification extends core_courseformat\base {
  * @param stdClass $context The context of the course
  */
 function format_bulkcertification_extend_navigation_course($navigation, $course, $context) {
-
     $format = course_get_format($course);
 
     $isbulk = $format instanceof format_bulkcertification;
 
     if ($isbulk && has_capability('format/bulkcertification:manage', $context)) {
-
         $reports = $navigation->children->get('coursereports');
-
         $params = ['course' => $course->id];
-
         $url = new moodle_url('/course/format/bulkcertification/statistics.php', $params);
-        $reports->add(get_string('report_statistics', 'format_bulkcertification'), $url,
-                            navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+        $reports->add(
+            get_string('report_statistics', 'format_bulkcertification'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            null,
+            new pix_icon('i/report', '')
+        );
     }
 }

@@ -39,7 +39,6 @@ use core_reportbuilder\local\report\filter;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issue extends base {
-
     /**
      * Database tables that this entity uses
      *
@@ -47,8 +46,8 @@ class issue extends base {
      */
     protected function get_default_tables(): array {
         return [
-            'bulkcertification_bulk',
-            'bulkcertification_issues',
+            'format_bulkcertification_bulk',
+            'format_bulkcertification_issues',
             'simplecertificate_issues',
             'user',
         ];
@@ -94,8 +93,8 @@ class issue extends base {
     protected function get_all_columns(): array {
         global $CFG;
 
-        $issuealias = $this->get_table_alias('bulkcertification_issues');
-        $bulkalias = $this->get_table_alias('bulkcertification_bulk');
+        $issuealias = $this->get_table_alias('format_bulkcertification_issues');
+        $bulkalias = $this->get_table_alias('format_bulkcertification_bulk');
         $simplecertificatealias = $this->get_table_alias('simplecertificate_issues');
         $useralias = $this->get_table_alias('user');
 
@@ -122,11 +121,12 @@ class issue extends base {
             ->add_fields("$useralias.id, $useralias.firstname, $useralias.lastname")
             ->set_type(column::TYPE_INTEGER)
             ->set_is_sortable(true)
-            ->set_callback(static function(?int $userid, ?object $data): string {
-                return \html_writer::link(new \moodle_url('/user/view.php',
-                                        ['id' => $userid]),
-                                        $data->firstname . ' ' . $data->lastname,
-                                        ['target' => '_blank']);
+            ->set_callback(static function (?int $userid, ?object $data): string {
+                return \html_writer::link(
+                    new \moodle_url('/user/view.php', ['id' => $userid]),
+                    $data->firstname . ' ' . $data->lastname,
+                    ['target' => '_blank']
+                );
             });
 
         $columns[] = (new column(
@@ -135,14 +135,14 @@ class issue extends base {
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
-            ->add_join("INNER JOIN {bulkcertification_bulk} {$bulkalias} " .
+            ->add_join("INNER JOIN {format_bulkcertification_bulk} {$bulkalias} " .
                 "ON {$bulkalias}.id = {$issuealias}.bulkid")
             ->add_join("INNER JOIN {simplecertificate_issues} {$simplecertificatealias} " .
                 "ON {$simplecertificatealias}.id = {$issuealias}.issueid")
             ->add_fields("$simplecertificatealias.timecreated")
             ->set_type(column::TYPE_TIMESTAMP)
             ->set_is_sortable(false)
-            ->set_callback(static function(?int $timecreated): string {
+            ->set_callback(static function (?int $timecreated): string {
                 return userdate($timecreated, get_string('strftimedatetimeshortaccurate', 'langconfig'));
             });
 
@@ -152,14 +152,14 @@ class issue extends base {
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
-            ->add_join("INNER JOIN {bulkcertification_bulk} {$bulkalias} " .
+            ->add_join("INNER JOIN {format_bulkcertification_bulk} {$bulkalias} " .
                 "ON {$bulkalias}.id = {$issuealias}.bulkid")
             ->add_join("INNER JOIN {simplecertificate_issues} {$simplecertificatealias} " .
                 "ON {$simplecertificatealias}.id = {$issuealias}.issueid")
             ->add_fields("$simplecertificatealias.id, $bulkalias.courseid")
             ->set_type(column::TYPE_INTEGER)
             ->set_is_sortable(false)
-            ->set_callback(static function(?int $issueid, ?object $data): string {
+            ->set_callback(static function (?int $issueid, ?object $data): string {
                 global $DB;
                 $simpleissue = $DB->get_record('simplecertificate_issues', ['id' => $issueid], '*', MUST_EXIST);
                 $course = $DB->get_record('course', ['id' => $data->courseid], '*', MUST_EXIST);
@@ -170,7 +170,6 @@ class issue extends base {
         $showuseridentity = explode(',', $CFG->showuseridentity);
 
         foreach ($showuseridentity as $field) {
-
             // Not use profile fields as identity fields.
             if (strpos($field, 'profile_field_') === 0) {
                 continue;
@@ -189,7 +188,6 @@ class issue extends base {
                 ->add_fields("$useralias.$field")
                 ->set_type(column::TYPE_TEXT)
                 ->set_is_sortable(true);
-
         }
 
         return $columns;
@@ -201,12 +199,10 @@ class issue extends base {
      * @return filter[]
      */
     protected function get_all_filters(): array {
-
         $filters = [];
 
         // Not define filters yet.
 
         return $filters;
     }
-
 }

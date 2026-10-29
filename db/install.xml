@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="bulkcertification_objectives" COMMENT="Available objectives to bulk certifications">
+    <TABLE NAME="format_bulkcertification_objectives" COMMENT="Available objectives to bulk certifications">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
@@ -22,7 +22,7 @@
         <INDEX NAME="type" UNIQUE="false" FIELDS="type"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="bulkcertification_bulk" COMMENT="One record by one bulk issue">
+    <TABLE NAME="format_bulkcertification_bulk" COMMENT="One record by one bulk issue">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="issuingid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -47,7 +47,7 @@
         <INDEX NAME="code" UNIQUE="false" FIELDS="code"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="bulkcertification_issues" COMMENT="Issued certificates with template">
+    <TABLE NAME="format_bulkcertification_issues" COMMENT="Issued certificates with template">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="issueid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -56,7 +56,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="issueid" TYPE="foreign" FIELDS="issueid" REFTABLE="simplecertificate_issues" REFFIELDS="id"/>
-        <KEY NAME="bulkid" TYPE="foreign" FIELDS="bulkid" REFTABLE="bulkcertification_bulk" REFFIELDS="id"/>
+        <KEY NAME="bulkid" TYPE="foreign" FIELDS="bulkid" REFTABLE="format_bulkcertification_bulk" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>

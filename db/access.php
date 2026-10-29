@@ -22,10 +22,12 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $capabilities = [
 
     'format/bulkcertification:deleteissues' => [
-        'riskbitmask' => RISK_MANAGETRUST|RISK_DATALOSS,
+        'riskbitmask' => RISK_MANAGETRUST | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [

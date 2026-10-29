@@ -27,10 +27,18 @@
 
 namespace format_bulkcertification;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot . '/mod/simplecertificate/locallib.php');
 
+/**
+ * Bulk simple certificate class.
+ *
+ * @package    format_bulkcertification
+ * @copyright  2024 David Herney - cirano
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class bulksimplecertificate extends \simplecertificate {
-
     /**
      * Remove an issue certificate
      *
@@ -44,8 +52,12 @@ class bulksimplecertificate extends \simplecertificate {
         try {
             // Try to get issue file.
             if (!$this->issue_file_exists($issue)) {
-                throw new \moodle_exception('filenotfound', 'simplecertificate', null, $issue->certificatename .
-                                            ' (issue id: ' . $issue->id . ', userid: ' .$issue->userid . ')');
+                throw new \moodle_exception(
+                    'filenotfound',
+                    'simplecertificate',
+                    null,
+                    $issue->certificatename . ' (issue id: ' . $issue->id . ', userid: ' . $issue->userid . ')'
+                );
             }
             $fs = get_file_storage();
 
@@ -53,7 +65,6 @@ class bulksimplecertificate extends \simplecertificate {
             $file = $fs->get_file_by_hash($issue->pathnamehash);
 
             $file->delete();
-
         } catch (\moodle_exception $e) {
             debugging($e->getMessage(), DEBUG_DEVELOPER, $e->getTrace());
         }
@@ -97,8 +108,12 @@ class bulksimplecertificate extends \simplecertificate {
                 $issuedcert = $issuecert;
             }
             // Not in cache, trying get from database.
-        } else if (!$issuedcert = $DB->get_record('simplecertificate_issues',
-                        ['userid' => $userid, 'certificateid' => $this->get_instance()->id, 'timedeleted' => null])) {
+        } else if (
+            !$issuedcert = $DB->get_record(
+                'simplecertificate_issues',
+                ['userid' => $userid, 'certificateid' => $this->get_instance()->id, 'timedeleted' => null]
+            )
+        ) {
             // Not in cache and not in DB, create new certificate issue record.
 
             if (!$issueifempty) {
@@ -146,7 +161,6 @@ class bulksimplecertificate extends \simplecertificate {
      * @return string the grade result
      */
     protected function get_grade($userid = null) {
-
         // Changed from original: The grade is not taken into account in these certificates since
         // users are not actually enrolled/qualified.
         return '0';
@@ -160,9 +174,7 @@ class bulksimplecertificate extends \simplecertificate {
      * @return stdClass bool the mod object if it exists, false otherwise
      */
     protected function get_mod_grade($moduleid, $userid) {
-
         // Changed from original: The grade cannot be associated with a module.
-
         return false;
     }
 
@@ -174,7 +186,6 @@ class bulksimplecertificate extends \simplecertificate {
      * @return mixed return stored_file if successful, false otherwise
      */
     public function save_pdf_forced(\stdClass $issuecert, bool $force = false) {
-
         if ($force) {
             $issuecert->haschange = 1;
         }
@@ -222,14 +233,15 @@ class bulksimplecertificate extends \simplecertificate {
 
             $filename = $this->get_filecert_name($issuecert);
             // Changed from original: The component, filearea and context are changed so that it is not tied to the activity.
-            $fileinfo = ['contextid' => $context->id,
-                        'component' => 'user',
-                        'filearea' => 'private',
-                        'itemid' => $issuecert->id,
-                        'filepath' => '/certificates/' . $issuecert->coursename . '/',
-                        'mimetype' => 'application/pdf',
-                        'userid' => $issuecert->userid,
-                        'filename' => $filename,
+            $fileinfo = [
+                'contextid' => $context->id,
+                'component' => 'user',
+                'filearea' => 'private',
+                'itemid' => $issuecert->id,
+                'filepath' => '/certificates/' . $issuecert->coursename . '/',
+                'mimetype' => 'application/pdf',
+                'userid' => $issuecert->userid,
+                'filename' => $filename,
             ];
 
             $fs = get_file_storage();
@@ -245,7 +257,8 @@ class bulksimplecertificate extends \simplecertificate {
             if (!$DB->update_record('simplecertificate_issues', $issuecert)) {
                 throw new \moodle_exception('cannotupdatemod', 'error', null, 'simplecertificate_issue');
             }
-             return $file;
+
+            return $file;
         }
     }
 
@@ -289,20 +302,19 @@ class bulksimplecertificate extends \simplecertificate {
             switch ($this->get_instance()->delivery) {
                 case self::OUTPUT_FORCE_DOWNLOAD:
                     send_stored_file($file, 10, 0, true, ['filename' => $file->get_filename(), 'dontdie' => true]);
-                break;
-
+                    break;
                 case self::OUTPUT_SEND_EMAIL:
                     $this->send_certificade_email($issuecert);
                     echo $OUTPUT->header();
-                    echo $OUTPUT->box(get_string('emailsent', 'simplecertificate') . '<br>' . $OUTPUT->close_window_button(),
-                                    'generalbox', 'notice');
+                    echo $OUTPUT->box(
+                        get_string('emailsent', 'simplecertificate') . '<br>' . $OUTPUT->close_window_button(),
+                        'generalbox',
+                        'notice'
+                    );
                     echo $OUTPUT->footer();
-                break;
-
-                // OUTPUT_OPEN_IN_BROWSER.
+                    break;
                 default: // Open in browser.
                     send_stored_file($file, 10, 0, false, ['dontdie' => true]);
-                break;
             }
 
             // Changed from original: The file is not deleted after being sent.
@@ -319,7 +331,6 @@ class bulksimplecertificate extends \simplecertificate {
      * @return string Return certificate text with all substutions
      */
     protected function get_certificate_text($issuecert, $certtext = null) {
-
         $user = get_complete_user_data('id', $issuecert->userid);
         if (!$user) {
             throw new \moodle_exception('nousersfound', 'moodle');
@@ -399,8 +410,8 @@ class bulksimplecertificate extends \simplecertificate {
         // Changed from original: Feature to the bulk format.
         if (isset($this->get_instance()->customparams)) {
             $customparams = is_string($this->get_instance()->customparams) ?
-                                (array)json_decode($this->get_instance()->customparams) :
-                                (array)$this->get_instance()->customparams;
+                (array)json_decode($this->get_instance()->customparams) :
+                (array)$this->get_instance()->customparams;
 
             foreach ($customparams as $key => $param) {
                 $a->$key = $param;
@@ -451,7 +462,7 @@ class bulksimplecertificate extends \simplecertificate {
         // Changed from original: The role in the course does not apply because the user does not actually enroll.
         $a->userrolename = '';
 
-        // Changed from original: The enrol date does not apply because the user does not actually register
+        // Changed from original: The enrol date does not apply because the user does not actually register.
         $a->timestart = '';
 
         $a = (array)$a;
@@ -462,7 +473,7 @@ class bulksimplecertificate extends \simplecertificate {
             // Due #148 bug, i must disable filters, because activities names {USERRESULTS}
             // will be replaced by actitiy link, don't make sense put activity link
             // in the certificate, only activity name and grade
-            // para=> false to remove the <div> </div>  form strings
+            // para=> false to remove the <div> </div>  form strings.
             $replace[] = (string)$value;
         }
 
@@ -483,8 +494,7 @@ class bulksimplecertificate extends \simplecertificate {
      * @return string the date
      */
     protected function get_date(\stdClass $issuecert) {
-
-        // Get date format
+        // Get date format.
         if (empty($this->get_instance()->certdatefmt)) {
             $format = get_string('strftimedate', 'langconfig');
         } else {
@@ -509,7 +519,6 @@ class bulksimplecertificate extends \simplecertificate {
      * @param int $userid the user id, if none are supplied, gets $USER->id
      */
     protected function get_user_results($userid = null, $format = 'text', $all = false) {
-
         // Changed from original: Grades are not taken into account at all.
         return 'N/A';
     }
@@ -520,7 +529,6 @@ class bulksimplecertificate extends \simplecertificate {
      * @return string the outcome
      */
     protected function get_outcome($userid) {
-
         // Changed from original: Does not apply to this case.
         return 'N/A';
     }
@@ -554,19 +562,20 @@ class bulksimplecertificate extends \simplecertificate {
      * @return void
      */
     public function download_bulk($bulk, array $issues) {
-
         // Calculate file name.
-        $filename = str_replace(' ', '_',
-                                clean_filename(
-                                            $bulk->coursename . ' ' .
-                                                get_string('modulenameplural', 'simplecertificate') . ' ' .
-                                                strip_tags(format_string($bulk->certificatename, true)) . '.zip'));
+        $filename = str_replace(
+            ' ',
+            '_',
+            clean_filename(
+                $bulk->coursename . ' ' . get_string('modulenameplural', 'simplecertificate') . ' ' .
+                    strip_tags(format_string($bulk->certificatename, true)) . '.zip'
+            )
+        );
 
         $filename = str_replace(self::CHARS_NOT, self::CHARS_YES, $filename);
 
         $filesforzipping = [];
         foreach ($issues as $issuecert) {
-
             if ($this->issue_file_exists($issuecert)) {
                 $fs = get_file_storage();
                 $file = $fs->get_file_by_hash($issuecert->pathnamehash);
@@ -598,7 +607,7 @@ class bulksimplecertificate extends \simplecertificate {
     public function print_issue_certificate_file(\stdClass $issuecert, $shortname = false) {
         global $OUTPUT;
 
-        // Trying to cath course module context
+        // Trying to catch course module context.
         try {
             $fs = get_file_storage();
             if (!$fs->file_exists_by_hash($issuecert->pathnamehash)) {
@@ -618,12 +627,10 @@ class bulksimplecertificate extends \simplecertificate {
             }
 
             $output .= '<a href="' . $url->out(true) . '" target="_blank" title="' . $fullfilename . '" >' . $filename . '</a>';
-
         } catch (\Exception $e) {
             $output = get_string('filenotfound', 'simplecertificate', '');
         }
 
         return '<div class="files">' . $output . '<br /> </div>';
-
     }
 }

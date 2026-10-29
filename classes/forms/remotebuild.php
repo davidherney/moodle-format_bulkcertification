@@ -37,11 +37,10 @@ use moodleform;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class remotebuild extends moodleform {
-
     /**
      * @var object List of local data.
      */
-    protected $_data;
+    protected $localdata;
 
     /**
      * Form definition.
@@ -53,26 +52,26 @@ class remotebuild extends moodleform {
         $areaprops = ['rows' => 10, 'cols' => 80, 'style' => 'width: 100%'];
 
         // This contains the data of this form.
-        $this->_data  = $this->_customdata['data'];
+        $this->localdata  = $this->_customdata['data'];
 
-        $templatename = property_exists($this->_data, 'templatename') ? $this->_data->templatename : '';
+        $templatename = property_exists($this->localdata, 'templatename') ? $this->localdata->templatename : '';
 
-        if (property_exists($this->_data, 'objective')) {
-            $localhours = $this->_data->objective->hours;
-            $localname = $this->_data->objective->name;
+        if (property_exists($this->localdata, 'objective')) {
+            $localhours = $this->localdata->objective->hours;
+            $localname = $this->localdata->objective->name;
         } else {
             $localhours = 0;
             $localname = '';
         }
 
         $group = null;
-        if (property_exists($this->_data, 'group')) {
-            $group = $this->_data->group;
+        if (property_exists($this->localdata, 'group')) {
+            $group = $this->localdata->group;
         }
 
         $htmlusers = '';
 
-        //General options
+        // General options.
         $mform->addElement('header', 'courseoptions', get_string('courseoptions', 'format_bulkcertification'));
 
         if (is_object($group)) {
@@ -86,7 +85,7 @@ class remotebuild extends moodleform {
             $vars->remote = $group->name;
             $coursename = get_string('course_multi', 'format_bulkcertification', $vars);
 
-            $this->_data->objectivedate = $group->enddate;
+            $this->localdata->objectivedate = $group->enddate;
 
             $table = new \html_table();
             $table->attributes['class'] = 'generaltable';
@@ -104,7 +103,6 @@ class remotebuild extends moodleform {
             }
 
             foreach ($group->users as $user) {
-
                 $data = [];
 
                 foreach ($columns as $column) {
@@ -115,7 +113,6 @@ class remotebuild extends moodleform {
             }
 
             $htmlusers = \html_writer::table($table);
-
         } else {
             $hours = $localhours;
             $coursename = $localname;
@@ -160,13 +157,12 @@ class remotebuild extends moodleform {
 
         // This is a hidden field to store the remote data.
         // Use a textarea to store the data because it can be very large.
-        $this->_data->remotedata = base64_encode(json_encode($group));
+        $this->localdata->remotedata = base64_encode(json_encode($group));
         $mform->addElement('textarea', 'remotedata', '', $emptyprops);
 
         $this->add_action_buttons(true, get_string('build', 'format_bulkcertification'));
 
         // Finally set the current form data.
-        $this->set_data($this->_data);
+        $this->set_data($this->localdata);
     }
-
 }

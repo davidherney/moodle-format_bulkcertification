@@ -29,12 +29,11 @@ namespace format_bulkcertification\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issue_deleted extends \core\event\base {
-
     /**
      * Init method.
      */
     protected function init() {
-        $this->data['objecttable'] = 'bulkcertification_issues';
+        $this->data['objecttable'] = 'format_bulkcertification_issues';
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_OTHER;
     }
@@ -56,5 +55,4 @@ class issue_deleted extends \core\event\base {
     public function get_description() {
         return "The user with id '$this->userid' deleted the certificate issue with id '$this->objectid'.";
     }
-
 }

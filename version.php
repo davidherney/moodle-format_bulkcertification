@@ -24,12 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025053001;
-$plugin->release   = '1.0.1';
-$plugin->requires  = 2022111800;
+$plugin->version   = 2025053002;
+$plugin->release   = 'v5.1.1';
+$plugin->requires  = 2025100608;
 $plugin->component = 'format_bulkcertification';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = [
-    'format_topics' => 2024100700,
+    'format_topics' => 2025100600,
     'mod_simplecertificate' => 2024051106,
 ];

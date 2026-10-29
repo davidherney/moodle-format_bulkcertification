@@ -35,7 +35,6 @@ use core_courseformat\output\local\content as content_base;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class content extends content_base {
-
     /**
      * @var bool Topic parent format has add section after each topic.
      *
@@ -59,8 +58,10 @@ class content extends content_base {
             case \format_bulkcertification::ACTION_OBJECTIVES:
                 return 'format_bulkcertification/courseformat/objectives';
             case \format_bulkcertification::ACTION_CERTIFIED:
-                if ($this->format->currentoperation == \format_bulkcertification::OP_DETAILS
-                        || $this->format->currentoperation == \format_bulkcertification::OP_REBUILD) {
+                if (
+                    $this->format->currentoperation == \format_bulkcertification::OP_DETAILS ||
+                    $this->format->currentoperation == \format_bulkcertification::OP_REBUILD
+                ) {
                     return 'format_bulkcertification/courseformat/certified_detail';
                 } else {
                     return 'format_bulkcertification/courseformat/certified';
@@ -68,7 +69,7 @@ class content extends content_base {
             case \format_bulkcertification::ACTION_TPL:
             default:
                 return 'format_bulkcertification/local/content';
-            }
+        }
     }
 
     /**
@@ -101,16 +102,21 @@ class content extends content_base {
         $operation = $this->format->currentoperation;
 
         if ($this->format->currentaction == \format_bulkcertification::ACTION_BULK) {
-
-            \format_bulkcertification\controller::action_bulk($data, $coursecontext, $course, $operation);
-
+            \format_bulkcertification\controller::action_bulk(
+                $data,
+                $coursecontext,
+                $course,
+                $operation
+            );
         } else if ($this->format->currentaction == \format_bulkcertification::ACTION_OBJECTIVES) {
-
-            \format_bulkcertification\controller::action_objectives($data, $coursecontext, $course, $operation);
-
+            \format_bulkcertification\controller::action_objectives(
+                $data,
+                $coursecontext,
+                $course,
+                $operation
+            );
         } else if ($this->format->currentaction == \format_bulkcertification::ACTION_CERTIFIED) {
-
-            switch($operation) {
+            switch ($operation) {
                 case \format_bulkcertification::OP_REBUILD:
                     \format_bulkcertification\controller::certified_rebuild($data, $course);
                     // After the rebuild, list the issue certificates.
@@ -124,7 +130,6 @@ class content extends content_base {
                     \format_bulkcertification\controller::action_certified($data, $coursecontext, $course, $operation);
                     break;
             }
-
         } else {
             $data->activetpl = true;
         }

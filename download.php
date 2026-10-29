@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once '../../../config.php';
+require_once('../../../config.php');
 
 $courseid = required_param('id', PARAM_INT);
 $bulkid = required_param('bulkid', PARAM_INT);
@@ -34,13 +34,12 @@ $context = context_course::instance($course->id);
 require_login($course->id, false);
 require_capability('mod/simplecertificate:manage', $context);
 
-$bulk = $DB->get_record('bulkcertification_bulk', ['id' => $bulkid], '*', MUST_EXIST);
-$issues = $DB->get_records('bulkcertification_issues', ['bulkid' => $bulkid], '', 'id, issueid');
+$bulk = $DB->get_record('format_bulkcertification_bulk', ['id' => $bulkid], '*', MUST_EXIST);
+$issues = $DB->get_records('format_bulkcertification_issues', ['bulkid' => $bulkid], '', 'id, issueid');
 
 if (!empty($issues)) {
-
     $ids = [];
-    foreach($issues as $issue) {
+    foreach ($issues as $issue) {
         $ids[] = $issue->issueid;
     }
 

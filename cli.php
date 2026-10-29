@@ -31,14 +31,15 @@ require_once($CFG->libdir . '/clilib.php'); // Cli only functions.
 $hr = "----------------------------------------\n";
 
 // Get cli options.
-list($options, $unrecognized) = cli_get_params(
+[$options, $unrecognized] = cli_get_params(
     [
         'help' => false,
         'rebulk' => false,
         'reissue' => false,
         'clone' => false,
         'iuser' => false,
-    ], [
+    ],
+    [
         'h'  => 'help',
         'rb' => 'rebulk',
         'ri' => 'reissue',
@@ -132,8 +133,8 @@ if ($options['iuser']) {
                     si.pathnamehash, si.coursename, bb.certificateid AS bcertificateid, bb.certificatename AS bcertificatename,
                     bb.bulktime, bb.coursename AS bcoursename, bb.id AS bulkid, bb.courseid, bb.customparams, bi.id AS biid
                 FROM {simplecertificate_issues} si
-                LEFT JOIN {bulkcertification_issues} bi ON si.id = bi.issueid
-                LEFT JOIN {bulkcertification_bulk} bb ON bi.bulkid = bb.id
+                LEFT JOIN {format_bulkcertification_issues} bi ON si.id = bi.issueid
+                LEFT JOIN {format_bulkcertification_bulk} bb ON bi.bulkid = bb.id
                 WHERE si.userid = :uid";
 
     $params = ['uid' => $user->id];
@@ -142,7 +143,7 @@ if ($options['iuser']) {
 
     if (!$rs->valid()) {
         echo get_string('cli_certificationnotfount', 'format_bulkcertification') . "\n";
-        $rs->close(); // Not going to iterate (but exit), close rs
+        $rs->close(); // Not going to iterate (but exit), close rs.
         die;
     }
 
@@ -166,7 +167,6 @@ if ($options['iuser']) {
         echo "Simple certificate issue id: $id\n";
 
         foreach ($records as $record) {
-
             echo "  Certificate id/Bulk certificate id: {$record->certificateid} / {$record->bcertificateid}\n";
             echo "  Certificate name/Bulk certificate name: {$record->certificatename} / {$record->bcertificatename}\n";
             echo "  Bulk issue id: $record->biid\n";
@@ -180,7 +180,7 @@ if ($options['iuser']) {
 
             $d = @json_decode($record->customparams);
             echo "  Custom params: ";
-            print_r($record->customparams);
+            echo $record->customparams;
             echo "\n";
 
             $file = $DB->get_record('files', ['pathnamehash' => $record->pathnamehash]);

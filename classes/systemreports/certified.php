@@ -24,8 +24,10 @@
 
 namespace format_bulkcertification\systemreports;
 
+// phpcs:disable
 // We need to include the bulkcertification lib file because it is not included in AJAX calls.
 require_once($CFG->dirroot . '/course/format/bulkcertification/lib.php');
+// phpcs:enable
 
 use format_bulkcertification\entities\bulk;
 use core_reportbuilder\local\helpers\database;
@@ -40,7 +42,6 @@ use core_reportbuilder\local\report\action;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class certified extends system_report {
-
     /**
      * If the report is for management.
      * @var bool
@@ -58,9 +59,9 @@ class certified extends system_report {
 
         // Our main entity, it contains all of the column definitions that we need.
         $entitymain = new bulk();
-        $entitymainalias = $entitymain->get_table_alias('bulkcertification_bulk');
+        $entitymainalias = $entitymain->get_table_alias('format_bulkcertification_bulk');
 
-        $this->set_main_table('bulkcertification_bulk', $entitymainalias);
+        $this->set_main_table('format_bulkcertification_bulk', $entitymainalias);
         $this->add_entity($entitymain);
 
         $courseid = $this->get_parameter('courseid', 0, 'int');
@@ -90,60 +91,70 @@ class certified extends system_report {
         $this->add_base_fields("{$entitymainalias}.id");
 
         // Add actions to the report.
-        $this->add_action((new action(
-            new \moodle_url('/course/view.php', [
-                                    'id' => $courseid,
-                                    'bulkid' => ':id',
-                                    'action' => \format_bulkcertification::ACTION_CERTIFIED,
-                                    'op' => \format_bulkcertification::OP_DETAILS,
-                                ]
-                            ),
-            new \pix_icon('i/preview', ''),
-            [],
-            false,
-            new \lang_string('details')
-        )));
-
-        $this->add_action((new action(
-            new \moodle_url('/course/format/bulkcertification/download.php', [
-                                    'id' => $courseid,
-                                    'bulkid' => ':id',
-                                ]
-                            ),
-            new \pix_icon('a/download_all', ''),
-            [],
-            false,
-            new \lang_string('download_bulk', 'format_bulkcertification')
-        )));
-
-        if ($this->tomanagment) {
-
-            $this->add_action((new action(
-                new \moodle_url('/course/view.php', [
-                                        'id' => $courseid,
-                                        'bulkid' => ':id',
-                                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
-                                        'op' => \format_bulkcertification::OP_REBUILDALL,
-                                        'sesskey' => sesskey(),
-                                    ]
-                                ),
-                new \pix_icon('a/refresh', ''),
+        $this->add_action(
+            new action(
+                new \moodle_url(
+                    '/course/view.php',
+                    [
+                        'id' => $courseid,
+                        'bulkid' => ':id',
+                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                        'op' => \format_bulkcertification::OP_DETAILS,
+                    ]
+                ),
+                new \pix_icon('i/preview', ''),
                 [],
                 false,
-                new \lang_string('rebuild', 'format_bulkcertification')
-            )));
+                new \lang_string('details')
+            )
+        );
+
+        $this->add_action(
+            new action(
+                new \moodle_url(
+                    '/course/format/bulkcertification/download.php',
+                    ['id' => $courseid, 'bulkid' => ':id']
+                ),
+                new \pix_icon('a/download_all', ''),
+                [],
+                false,
+                new \lang_string('download_bulk', 'format_bulkcertification')
+            )
+        );
+
+        if ($this->tomanagment) {
+            $this->add_action(
+                new action(
+                    new \moodle_url(
+                        '/course/view.php',
+                        [
+                            'id' => $courseid,
+                            'bulkid' => ':id',
+                            'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                            'op' => \format_bulkcertification::OP_REBUILDALL,
+                            'sesskey' => sesskey(),
+                        ]
+                    ),
+                    new \pix_icon('a/refresh', ''),
+                    [],
+                    false,
+                    new \lang_string('rebuild', 'format_bulkcertification')
+                )
+            );
         }
 
         if ($candelete) {
             $this->add_action((new action(
-                new \moodle_url('/course/view.php', [
-                                        'id' => $courseid,
-                                        'delete' => ':id',
-                                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
-                                        'op' => \format_bulkcertification::OP_DELETE,
-                                        'sesskey' => sesskey(),
-                                    ]
-                                ),
+                new \moodle_url(
+                    '/course/view.php',
+                    [
+                        'id' => $courseid,
+                        'delete' => ':id',
+                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                        'op' => \format_bulkcertification::OP_DELETE,
+                        'sesskey' => sesskey(),
+                    ]
+                ),
                 new \pix_icon('i/trash', ''),
                 [],
                 false,

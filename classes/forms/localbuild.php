@@ -37,11 +37,10 @@ use moodleform;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class localbuild extends moodleform {
-
     /**
      * @var object List of local data.
      */
-    protected $_data;
+    protected $localdata;
 
     /**
      * @var array List of delimiters.
@@ -58,15 +57,15 @@ class localbuild extends moodleform {
         $areaprops = ['rows' => 10, 'cols' => 80, 'style' => 'width: 100%'];
 
         // This contains the data of this form.
-        $this->_data = $this->_customdata['data'];
+        $this->localdata = $this->_customdata['data'];
 
-        //General options
+        // General options.
         $mform->addElement('header', 'courseoptions', get_string('courseoptions', 'format_bulkcertification'));
 
-        if (property_exists($this->_data, 'group')) {
-            $hours = $this->_data->group->hours;
-            $coursename = $this->_data->group->name;
-            $templatename = $this->_data->templatename;
+        if (property_exists($this->localdata, 'group')) {
+            $hours = $this->localdata->group->hours;
+            $coursename = $this->localdata->group->name;
+            $templatename = $this->localdata->templatename;
         } else {
             $hours = 0;
             $coursename = '';
@@ -116,7 +115,6 @@ class localbuild extends moodleform {
         $this->add_action_buttons(true, get_string('build', 'format_bulkcertification'));
 
         // Finally set the current form data.
-        $this->set_data($this->_data);
+        $this->set_data($this->localdata);
     }
-
 }

@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Upgrade script for Bulk certification format.
  *
@@ -36,7 +34,6 @@ function xmldb_format_bulkcertification_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2017090508) {
-
         // Add a 'type' field to the 'bulkcertification_objectives' table.
         $table = new xmldb_table('bulkcertification_objectives');
         $field = new xmldb_field('type', XMLDB_TYPE_CHAR, '7', null, XMLDB_NOTNULL, null, 'remote');
@@ -51,7 +48,6 @@ function xmldb_format_bulkcertification_upgrade($oldversion) {
     }
 
     if ($oldversion < 2017090509) {
-
         // Add a 'type' field to the 'bulkcertification_bulk' table.
         $table = new xmldb_table('bulkcertification_bulk');
         $field = new xmldb_field('customparams', XMLDB_TYPE_TEXT, null, null, null, null, null);
@@ -66,7 +62,6 @@ function xmldb_format_bulkcertification_upgrade($oldversion) {
     }
 
     if ($oldversion < 2024051203) {
-
         // Add a 'type' field to the 'bulkcertification_bulk' table.
         $table = new xmldb_table('bulkcertification_objectives');
         $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'id');
@@ -97,6 +92,26 @@ function xmldb_format_bulkcertification_upgrade($oldversion) {
 
         // Assign savepoint reached.
         upgrade_plugin_savepoint(true, 2024051203, 'format', 'bulkcertification');
+    }
+
+    if ($oldversion < 2026102800) {
+        // Rename tables so the names include the format_ component prefix.
+        $tablerenames = [
+            'bulkcertification_objectives' => 'format_bulkcertification_objectives',
+            'bulkcertification_bulk' => 'format_bulkcertification_bulk',
+            'bulkcertification_issues' => 'format_bulkcertification_issues',
+        ];
+
+        foreach ($tablerenames as $oldname => $newname) {
+            if (!$dbman->table_exists($oldname)) {
+                continue;
+            }
+            $oldtable = new xmldb_table($oldname);
+            $dbman->rename_table($oldtable, $newname);
+        }
+
+        // Assign savepoint reached.
+        upgrade_plugin_savepoint(true, 2026102800, 'format', 'bulkcertification');
     }
 
     return true;

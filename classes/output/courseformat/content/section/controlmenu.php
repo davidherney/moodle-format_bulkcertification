@@ -35,7 +35,6 @@ use core_courseformat\output\local\content\section\controlmenu as controlmenu_ba
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class controlmenu extends controlmenu_base {
-
     /** @var course_format the course format class */
     protected $format;
 
@@ -50,7 +49,6 @@ class controlmenu extends controlmenu_base {
      * @return array of edit control items
      */
     public function section_control_items() {
-
         return [];
     }
 }

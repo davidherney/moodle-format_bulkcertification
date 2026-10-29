@@ -24,8 +24,10 @@
 
 namespace format_bulkcertification\systemreports;
 
+// phpcs:disable
 // We need to include the bulkcertification lib file because it is not included in AJAX calls.
 require_once($CFG->dirroot . '/course/format/bulkcertification/lib.php');
+// phpcs:enable
 
 use format_bulkcertification\entities\issue;
 use core_reportbuilder\local\helpers\database;
@@ -40,7 +42,6 @@ use core_reportbuilder\local\report\action;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issues extends system_report {
-
     /**
      * If the report is for management.
      * @var bool
@@ -58,9 +59,9 @@ class issues extends system_report {
 
         // Our main entity, it contains all of the column definitions that we need.
         $entitymain = new issue();
-        $entitymainalias = $entitymain->get_table_alias('bulkcertification_issues');
+        $entitymainalias = $entitymain->get_table_alias('format_bulkcertification_issues');
 
-        $this->set_main_table('bulkcertification_issues', $entitymainalias);
+        $this->set_main_table('format_bulkcertification_issues', $entitymainalias);
         $this->add_entity($entitymain);
 
         $courseid = $this->get_parameter('courseid', 0, 'int');
@@ -93,40 +94,47 @@ class issues extends system_report {
 
         // Add actions to the report.
         if ($this->tomanagment) {
-
-            $this->add_action((new action(
-                new \moodle_url('/course/view.php', [
-                                        'id' => $courseid,
-                                        'bulkid' => $bulkid,
-                                        'issueid' => ':id',
-                                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
-                                        'op' => \format_bulkcertification::OP_REBUILD,
-                                        'sesskey' => sesskey(),
-                                    ]
-                                ),
-                new \pix_icon('a/refresh', ''),
-                [],
-                false,
-                new \lang_string('rebuild', 'format_bulkcertification')
-            )));
+            $this->add_action(
+                new action(
+                    new \moodle_url(
+                        '/course/view.php',
+                        [
+                            'id' => $courseid,
+                            'bulkid' => $bulkid,
+                            'issueid' => ':id',
+                            'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                            'op' => \format_bulkcertification::OP_REBUILD,
+                            'sesskey' => sesskey(),
+                        ]
+                    ),
+                    new \pix_icon('a/refresh', ''),
+                    [],
+                    false,
+                    new \lang_string('rebuild', 'format_bulkcertification')
+                )
+            );
         }
 
         if ($candelete) {
-            $this->add_action((new action(
-                new \moodle_url('/course/view.php', [
-                                        'id' => $courseid,
-                                        'bulkid' => $bulkid,
-                                        'delete' => ':id',
-                                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
-                                        'op' => \format_bulkcertification::OP_DETAILS,
-                                        'sesskey' => sesskey(),
-                                    ]
-                                ),
-                new \pix_icon('i/trash', ''),
-                [],
-                false,
-                new \lang_string('delete')
-            )));
+            $this->add_action(
+                new action(
+                    new \moodle_url(
+                        '/course/view.php',
+                        [
+                            'id' => $courseid,
+                            'bulkid' => $bulkid,
+                            'delete' => ':id',
+                            'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                            'op' => \format_bulkcertification::OP_DETAILS,
+                            'sesskey' => sesskey(),
+                        ]
+                    ),
+                    new \pix_icon('i/trash', ''),
+                    [],
+                    false,
+                    new \lang_string('delete')
+                )
+            );
         }
 
         // Set if report can be downloaded.

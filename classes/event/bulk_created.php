@@ -29,12 +29,11 @@ namespace format_bulkcertification\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bulk_created extends \core\event\base {
-
     /**
      * Init method.
      */
     protected function init() {
-        $this->data['objecttable'] = 'bulkcertification_bulk';
+        $this->data['objecttable'] = 'format_bulkcertification_bulk';
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_OTHER;
     }
@@ -63,12 +62,14 @@ class bulk_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/course/view.php', [
-                                                        'id' => $this->objectid,
-                                                        'action' => \format_bulkcertification::ACTION_CERTIFIED,
-                                                        'op' => \format_bulkcertification::OP_DETAILS,
-                                                        'bulkid' => $this->other['bulkid'],
-                                                    ]);
+        return new \moodle_url(
+            '/course/view.php',
+            [
+                'id' => $this->objectid,
+                'action' => \format_bulkcertification::ACTION_CERTIFIED,
+                'op' => \format_bulkcertification::OP_DETAILS,
+                'bulkid' => $this->other['bulkid'],
+            ]
+        );
     }
-
 }

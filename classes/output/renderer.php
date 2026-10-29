@@ -17,14 +17,13 @@
 namespace format_bulkcertification\output;
 
 use core_courseformat\output\section_renderer;
-use moodle_page;
 
 /**
  * Basic renderer for bulk certification format.
  *
+ * @package    format_bulkcertification
  * @copyright  2024 David Herney - cirano
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends section_renderer {
-
 }

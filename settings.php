@@ -25,26 +25,50 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-
-
-    $settings->add(new admin_setting_configtext('format_bulkcertification/defaultemail',
+    $settings->add(
+        new admin_setting_configtext(
+            'format_bulkcertification/defaultemail',
             new lang_string('defaultemail', 'format_bulkcertification'),
             new lang_string('defaultemail_help', 'format_bulkcertification'),
-            '', PARAM_RAW));
+            '',
+            PARAM_RAW
+        )
+    );
 
-    $settings->add(new admin_setting_heading('format_bulkcertification/externalinfo',
+    $settings->add(
+        new admin_setting_heading(
+            'format_bulkcertification/externalinfo',
             new lang_string('externalinfotitle', 'format_bulkcertification'),
-            ''));
+            ''
+        )
+    );
 
-    $settings->add(new admin_setting_configtext('format_bulkcertification/wsuri',
+    $settings->add(
+        new admin_setting_configtext(
+            'format_bulkcertification/wsuri',
             new lang_string('wsuri', 'format_bulkcertification'),
-            null, '', PARAM_RAW));
+            null,
+            '',
+            PARAM_RAW
+        )
+    );
 
-    $settings->add(new admin_setting_configtext('format_bulkcertification/wsuser',
+    $settings->add(
+        new admin_setting_configtext(
+            'format_bulkcertification/wsuser',
             new lang_string('wsuser', 'format_bulkcertification'),
-            null, '', PARAM_RAW));
+            null,
+            '',
+            PARAM_RAW
+        )
+    );
 
-    $settings->add(new admin_setting_configpasswordunmask('format_bulkcertification/wspassword',
+    $settings->add(
+        new admin_setting_configpasswordunmask(
+            'format_bulkcertification/wspassword',
             new lang_string('wspassword', 'format_bulkcertification'),
-            null, ''));
+            null,
+            ''
+        )
+    );
 }

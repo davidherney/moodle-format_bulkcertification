@@ -42,7 +42,6 @@ use core_reportbuilder\local\report\filter;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bulk extends base {
-
     /**
      * Database tables that this entity uses
      *
@@ -50,7 +49,7 @@ class bulk extends base {
      */
     protected function get_default_tables(): array {
         return [
-            'bulkcertification_bulk',
+            'format_bulkcertification_bulk',
         ];
     }
 
@@ -92,7 +91,7 @@ class bulk extends base {
      * @throws \coding_exception
      */
     protected function get_all_columns(): array {
-        $bulkalias = $this->get_table_alias('bulkcertification_bulk');
+        $bulkalias = $this->get_table_alias('format_bulkcertification_bulk');
 
         $columns[] = (new column(
             'id',
@@ -143,7 +142,7 @@ class bulk extends base {
             ->add_fields("$bulkalias.bulktime")
             ->set_is_sortable(true)
             ->set_type(column::TYPE_TIMESTAMP)
-            ->set_callback(static function(?int $bulktime): string {
+            ->set_callback(static function (?int $bulktime): string {
                 return userdate($bulktime, get_string('strftimedatetimeshortaccurate', 'langconfig'));
             });
 
@@ -156,7 +155,7 @@ class bulk extends base {
             ->add_fields("$bulkalias.customtime")
             ->set_is_sortable(true)
             ->set_type(column::TYPE_TIMESTAMP)
-            ->set_callback(static function(?int $bulktime): string {
+            ->set_callback(static function (?int $bulktime): string {
                 return userdate($bulktime, get_string('strftimedatefullshort', 'langconfig'));
             });
 
@@ -191,7 +190,7 @@ class bulk extends base {
     protected function get_all_filters(): array {
 
         $filters = [];
-        $bulkalias = $this->get_table_alias('bulkcertification_bulk');
+        $bulkalias = $this->get_table_alias('format_bulkcertification_bulk');
 
         $filters[] = (new filter(
             text::class,
@@ -258,5 +257,4 @@ class bulk extends base {
 
         return $filters;
     }
-
 }

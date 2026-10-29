@@ -37,11 +37,10 @@ use moodleform;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class objectivesimport extends moodleform {
-
     /**
      * @var object List of local data.
      */
-    protected $_data;
+    protected $localdata;
 
     /**
      * @var array List of delimiters.
@@ -52,11 +51,10 @@ class objectivesimport extends moodleform {
      * Form definition.
      */
     public function definition() {
-
         $mform = $this->_form;
 
         // This contains the data of this form.
-        $this->_data = $this->_customdata['data'];
+        $this->localdata = $this->_customdata['data'];
 
         $attrs = ['cols' => 80, 'rows' => 20];
         $mform->addElement('textarea', 'objectiveslist', get_string('objectiveslist', 'format_bulkcertification'), $attrs);
@@ -73,7 +71,7 @@ class objectivesimport extends moodleform {
         $values[\format_bulkcertification::IMPORT_REPLACE] = get_string('bulkobjectivereplace', 'format_bulkcertification');
         $mform->addElement('select', 'mode', get_string('bulkobjectivemode', 'format_bulkcertification'), $values);
 
-        $mform->addElement('hidden', 'id', $this->_data->id);
+        $mform->addElement('hidden', 'id', $this->localdata->id);
         $mform->setType('id', PARAM_INT);
 
         $mform->addElement('hidden', 'action', \format_bulkcertification::ACTION_OBJECTIVES);
@@ -85,8 +83,7 @@ class objectivesimport extends moodleform {
         $mform->addElement('submit', 'importsubmitbutton', get_string('import', 'format_bulkcertification'));
         $mform->closeHeaderBefore('importsubmitbutton');
 
-        // Finally set the current form data
-        $this->set_data($this->_data);
+        // Finally set the current form data.
+        $this->set_data($this->localdata);
     }
-
 }

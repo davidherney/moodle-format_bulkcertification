@@ -37,11 +37,10 @@ use moodleform;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class objective extends moodleform {
-
     /**
      * @var object List of local data.
      */
-    protected $_data;
+    protected $localdata;
 
     /**
      * Form definition.
@@ -51,7 +50,7 @@ class objective extends moodleform {
         $mform = $this->_form;
 
         // This contains the data of this form.
-        $this->_data  = $this->_customdata['data'];
+        $this->localdata  = $this->_customdata['data'];
 
         $mform->addElement('text', 'objectivename', get_string('objective_name', 'format_bulkcertification'));
         $mform->setType('objectivename', PARAM_TEXT);
@@ -72,7 +71,7 @@ class objective extends moodleform {
         $options = \format_bulkcertification\entities\objective::get_options_for_type();
         $mform->addElement('select', 'type', get_string('objective_type', 'format_bulkcertification'), $options);
 
-        $mform->addElement('hidden', 'id', $this->_data->id);
+        $mform->addElement('hidden', 'id', $this->localdata->id);
         $mform->setType('id', PARAM_INT);
 
         $mform->addElement('hidden', 'action', \format_bulkcertification::ACTION_OBJECTIVES);
@@ -84,8 +83,8 @@ class objective extends moodleform {
         $mform->addElement('submit', 'importsubmitbutton', get_string('addobjective', 'format_bulkcertification'));
         $mform->closeHeaderBefore('importsubmitbutton');
 
-        // Finally set the current form data
-        $this->set_data($this->_data);
+        // Finally set the current form data.
+        $this->set_data($this->localdata);
     }
 
     /**
@@ -95,14 +94,14 @@ class objective extends moodleform {
      * @param array $files
      * @return array the errors that were found
      */
-    function validation($data, $files) {
+    public function validation($data, $files) {
         global $DB;
 
         $errors = parent::validation($data, $files);
 
         // Add field validation check for duplicate shortname.
         $params = ['courseid' => $data['id'], 'code' => $data['code']];
-        if ($DB->get_record('bulkcertification_objectives', $params, '*', IGNORE_MULTIPLE)) {
+        if ($DB->get_record('format_bulkcertification_objectives', $params, '*', IGNORE_MULTIPLE)) {
             $errors['code'] = get_string('codetaken', 'format_bulkcertification', $data['code']);
         }
 
