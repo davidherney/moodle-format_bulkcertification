@@ -94,7 +94,7 @@ function xmldb_format_bulkcertification_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024051203, 'format', 'bulkcertification');
     }
 
-    if ($oldversion < 2026102800) {
+    if ($oldversion < 2025053002) {
         // Rename tables so the names include the format_ component prefix.
         $tablerenames = [
             'bulkcertification_objectives' => 'format_bulkcertification_objectives',
@@ -111,7 +111,7 @@ function xmldb_format_bulkcertification_upgrade($oldversion) {
         }
 
         // Assign savepoint reached.
-        upgrade_plugin_savepoint(true, 2026102800, 'format', 'bulkcertification');
+        upgrade_plugin_savepoint(true, 2025053002, 'format', 'bulkcertification');
     }
 
     return true;

@@ -75,9 +75,9 @@ class bulksimplecertificate extends \simplecertificate {
     /**
      * Get issued certificate object, if it's not exist, it will be create
      *
-     * @param mixed User obj or id
-     * @param boolean Issue teh user certificate if it's not exists (default = true)
-     * @return \stdClass the issue certificate object
+     * @param mixed $user User object or id
+     * @param boolean $issueifempty Issue teh user certificate if it's not exists (default = true)
+     * @return \stdClass|null The issue certificate object or null if not created
      */
     public function get_issue($user = null, $issueifempty = true) {
         global $DB;
@@ -281,7 +281,7 @@ class bulksimplecertificate extends \simplecertificate {
     /**
      * Get the time the user has spent in the course
      *
-     * @param int $userid User ID (default= $USER->id)
+     * @param int $user User ID (default= $USER->id)
      * @return int the total time spent in seconds
      */
     public function get_course_time($user = null) {
@@ -490,8 +490,7 @@ class bulksimplecertificate extends \simplecertificate {
      * Returns the date to display for the certificate.
      *
      * @param \stdClass $issuecert The issue certificate object
-     * @param int $userid
-     * @return string the date
+     * @return string The date to display for the certificate
      */
     protected function get_date(\stdClass $issuecert) {
         // Get date format.
@@ -517,6 +516,9 @@ class bulksimplecertificate extends \simplecertificate {
      *  Grade Item Name: grade<br>
      *
      * @param int $userid the user id, if none are supplied, gets $USER->id
+     * @param string $format The format of the results
+     * @param bool $all Whether to get all results
+     * @return string the user results
      */
     protected function get_user_results($userid = null, $format = 'text', $all = false) {
         // Changed from original: Grades are not taken into account at all.
@@ -526,6 +528,7 @@ class bulksimplecertificate extends \simplecertificate {
     /**
      * Returns the outcome to display on the certificate
      *
+     * @param int $userid User id
      * @return string the outcome
      */
     protected function get_outcome($userid) {
@@ -536,7 +539,7 @@ class bulksimplecertificate extends \simplecertificate {
     /**
      * Verify if user meet issue conditions
      *
-     * @param int $userid User id
+     * @param int $user User id
      * @return string null if user meet issued conditions, or an text with erro
      */
     protected function can_issue($user = null, $chkcompletation = true) {

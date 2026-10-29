@@ -1272,6 +1272,7 @@ class controller {
      * The params bulkorissueid and clone are used in client mode.
      *
      * @param \stdClass $data
+     * @param \stdClass $course
      * @param bool $all Rebuild a bulk release
      * @param int $bulkorissueid Bulk or issue id. If $all = true then $bulkorissueid is the bulk id
      * @param bool $clone Create the issues as a new release
