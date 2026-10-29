@@ -68,23 +68,25 @@
                 {{/canmanage}}
                 {{#canmanage}}
                 <li class="nav-item dropdown" role="none">
-                    <a class="nav-link dropdown-toggle {{#activeobjectives}}active{{/activeobjectives}}" data-toggle="dropdown" href="#" role="menuitem" aria-haspopup="true" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle {{#activeobjectives}}active{{/activeobjectives}}"
+                        id="bulkcertification-objectives-menu" data-bs-toggle="dropdown" href="#" role="menuitem"
+                        aria-haspopup="true" aria-expanded="false" aria-controls="bulkcertification-objectives-menu-items">
                         {{#str}} action_objectives, format_bulkcertification {{/str}}
                     </a>
-                    <ul class="dropdown-menu">
-                        <li class="nav-item" role="none">
+                    <ul class="dropdown-menu" id="bulkcertification-objectives-menu-items" role="menu" aria-labelledby="bulkcertification-objectives-menu">
+                        <li>
                             <a class="dropdown-item" role="menuitem" href="{{{courseurl}}}&action={{actionobjectives}}">
                                 {{#str}} objectives, format_bulkcertification {{/str}}
                             </a>
                         </li>
-                        <li class="dropdown-divider"></li>
-                        <li class="nav-item" role="none">
-                            <a class="dropdown-item" href="{{{courseurl}}}&action={{actionobjectives}}&op={{operationadd}}">
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" role="menuitem" href="{{{courseurl}}}&action={{actionobjectives}}&op={{operationadd}}">
                                 {{#str}} addobjective, format_bulkcertification {{/str}}
                             </a>
                         </li>
-                        <li class="nav-item" role="none">
-                            <a class="dropdown-item" href="{{{courseurl}}}&action={{actionobjectives}}&op={{operationimport}}">
+                        <li>
+                            <a class="dropdown-item" role="menuitem" href="{{{courseurl}}}&action={{actionobjectives}}&op={{operationimport}}">
                                 {{#str}} importobjectives, format_bulkcertification {{/str}}
                             </a>
                         </li>
@@ -98,16 +100,16 @@
             {{#pagemessages}}
                 <div class="alert alert-info alert-dismissible fade show" role="alert">
                     {{{.}}}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="{{#str}} closebuttontitle {{/str}}">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert">
+                        <span class="visually-hidden">{{#str}} dismissnotification, core {{/str}}</span>
                     </button>
                 </div>
             {{/pagemessages}}
             {{#pageerrors}}
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{{.}}}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="{{#str}} closebuttontitle {{/str}}">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert">
+                        <span class="visually-hidden">{{#str}} dismissnotification, core {{/str}}</span>
                     </button>
                 </div>
             {{/pageerrors}}

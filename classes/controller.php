@@ -839,7 +839,7 @@ class controller {
         $delete       = optional_param('delete', 0, PARAM_INT);
         $confirm      = optional_param('confirm', '', PARAM_ALPHANUM); //md5 confirmation hash
 
-        $userformatdatetime = get_string('strftimedatetimeshort');
+        $userformatdatetime = get_string('strftimedatetimeshort', 'langconfig');
         $candelete = has_capability('format/bulkcertification:deleteissues', $coursecontext);
 
         // Delete a group of certificates, after confirmation
@@ -926,8 +926,8 @@ class controller {
             }
         }
 
-        $userformatdate = get_string('strftimedaydate');
-        $userformatdatetime = get_string('strftimedaydatetime');
+        $userformatdate = get_string('strftimedaydate', 'langconfig');
+        $userformatdatetime = get_string('strftimedaydatetime', 'langconfig');
 
         $issuing = $DB->get_record('user', ['id' => $bulk->issuingid]);
         $issuingnames = fullname($issuing);
