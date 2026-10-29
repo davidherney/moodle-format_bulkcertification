@@ -12,7 +12,8 @@
     }
 
     #topofscroll {
-        max-width: unset!important;
+        /* stylelint-disable-next-line declaration-no-important */
+        max-width: unset !important;
     }
 }
 
